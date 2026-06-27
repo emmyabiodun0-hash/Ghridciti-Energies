@@ -36,6 +36,7 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.getenv("DEFAULT_EMAIL")
 app.config['MAIL_PASSWORD'] = os.getenv("GMAIL_PASSWORD")
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv("DEFAULT_EMAIL")
+app.config["PAYSTACK_SECRET_KEY"] = os.getenv("PAYSTACK_SECRET_KEY")
 
 
 
