@@ -16,7 +16,7 @@ from forms import LoginForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Mail, Message
 
-from utils import generate_random_otp, send_registration_mail
+from utils import generate_random_otp, send_order_mail, send_registration_mail
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -213,7 +213,7 @@ def save_order():
 
         # Send the email using Brevo
         try:
-            send_registration_mail(
+            send_order_mail(
                 to="gemmy1866@gmail.com",
                 customer_name=order.name,
                 html_content=html_text

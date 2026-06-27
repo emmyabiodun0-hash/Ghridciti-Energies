@@ -25,7 +25,7 @@ def send_registration_mail(
     ):
     payload = {  
             "sender":{  
-                "name":"Techzone",
+                "name":"Ghridciti Energies",
                 "email":"gemmy1866@gmail.com"
             },
             "to":[  
@@ -46,6 +46,43 @@ def send_registration_mail(
             },
             data=json.dumps(payload)
         )
+    print(response.json())
+    return response
+
+
+
+
+
+def send_order_mail(
+    to: str,
+    customer_name: str,
+    html_content: str
+):
+    payload = {
+        "sender": {
+            "name": "Ghridciti Energies",
+            "email": "gemmy1866@gmail.com"
+        },
+        "to": [
+            {
+                "email": to,
+                "name": customer_name
+            }
+        ],
+        "subject": "New Meter Request",
+        "htmlContent": html_content
+    }
+
+    response = requests.post(
+        url=BREVO_URL,
+        headers={
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": os.getenv("BREVO_API_KEY")
+        },
+        data=json.dumps(payload)
+    )
+
     print(response.json())
     return response
 
