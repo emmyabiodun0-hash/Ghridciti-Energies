@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style>
+
+/* =========================
+   GLOBAL RESET (RESPONSIVE)
+========================= */
+body{
+    background:#050505;
+    font-family:Arial, sans-serif;
+
+    margin:0;
+    padding:12px;
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* WRAPPER */
+main{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* =========================
+   FORM CARD
+========================= */
+form{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+
+    width:100%;
+    max-width:420px;
+
+    padding:35px;
+    background:rgba(10,10,10,0.95);
+    border-radius:16px;
+    border:1px solid #1aff66;
+    box-shadow:0 0 25px rgba(26,255,102,0.15);
+
+    box-sizing:border-box;
+}
+
+/* =========================
+   TITLE
+========================= */
+h2{
+    text-align:center;
+    color:#1aff66;
+    margin:0;
+    font-size:clamp(20px,4vw,26px);
+}
+
+/* =========================
+   TEXT
+========================= */
+.info{
+    text-align:center;
+    color:#bbb;
+    font-size:clamp(13px,2.5vw,14px);
+    line-height:1.5;
+}
+
+.expire{
+    text-align:center;
+    color:#1aff66;
+    font-size:clamp(12px,2.3vw,13px);
+    font-weight:bold;
+    opacity:0.8;
+}
+
+/* =========================
+   INPUT
+========================= */
+.form-control{
+    padding:14px;
+    border:1px solid #222;
+    background:#111;
+    color:white;
+    border-radius:10px;
+    outline:none;
+
+    font-size:clamp(14px,2.5vw,16px);
+
+    width:100%;
+    text-align:center;
+    letter-spacing:4px;
+
+    transition:0.3s;
+    box-sizing:border-box;
+}
+
+.form-control:focus{
+    border-color:#1aff66;
+    box-shadow:0 0 10px rgba(26,255,102,0.4);
+}
+
+/* =========================
+   BUTTON
+========================= */
+input[type="submit"]{
+    padding:14px;
+    background:linear-gradient(90deg,#1aff66,#00cc55);
+    color:black;
+    border:none;
+    border-radius:10px;
+
+    font-size:clamp(14px,2.5vw,16px);
+    font-weight:bold;
+
+    cursor:pointer;
+    transition:0.3s;
+}
+
+input[type="submit"]:hover{
+    transform:scale(1.03);
+    box-shadow:0 0 15px #1aff66;
+}
+
+/* =========================
+   MOBILE FIX
+========================= */
+@media (max-width:480px){
+
+    body{
+        padding:10px;
+    }
+
+    form{
+        padding:20px;
+        border-radius:14px;
+    }
+
+}
+
+/* =========================
+   SMALL HEIGHT FIX
+========================= */
+@media (max-height:600px){
+
+    body{
+        align-items:flex-start;
+    }
+
+    form{
+        margin-top:20px;
+    }
+
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<main>
+
+    <form method="post">
+
+        <h2>Verify OTP</h2>
+
+        <p class="info">
+            Enter the verification code sent to your email
+        </p>
+
+        <input 
+            type="text" 
+            name="token" 
+            class="form-control" 
+            placeholder="Enter OTP"
+            maxlength="6"
+        >
+
+        <p class="expire">
+            The code will expire in 10 minutes
+        </p>
+
+        <input type="submit" value="Verify">
+
+    </form>
+
+</main>
+
+{% endblock %}

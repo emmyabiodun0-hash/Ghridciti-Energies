@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Ghridciti Energy</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, sans-serif;
+        }
+
+        body{
+            background:#0b0b0b;
+            color:white;
+            padding:40px;
+        }
+
+        h1{
+            color:#00ff66;
+            margin-bottom:30px;
+            text-align:center;
+        }
+
+        .table-container{
+            overflow-x:auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:#111;
+            border-radius:12px;
+            overflow:hidden;
+        }
+
+        th{
+            background:#00ff66;
+            color:#000;
+            padding:15px;
+            text-align:left;
+        }
+
+        td{
+            padding:15px;
+            border-bottom:1px solid #222;
+        }
+
+        tr:hover{
+            background:#181818;
+        }
+
+        select{
+            padding:8px;
+            border:none;
+            border-radius:6px;
+            background:#222;
+            color:white;
+        }
+
+        button{
+            padding:8px 15px;
+            border:none;
+            border-radius:6px;
+            background:#00ff66;
+            color:black;
+            font-weight:bold;
+            cursor:pointer;
+            margin-left:10px;
+        }
+
+        button:hover{
+            opacity:.9;
+        }
+
+        .pending{
+            color:#ffc107;
+            font-weight:bold;
+        }
+
+        .dispatched{
+            color:#00bfff;
+            font-weight:bold;
+        }
+
+        .delivered{
+            color:#00ff66;
+            font-weight:bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<div class="table-container">
+<table>
+
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Meter</th>
+            <th>Amount</th>
+            <th>Reference</th>
+            <th>Status</th>
+            <th>Update</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    {% for order in orders %}
+    <tr>
+
+        <td>{{ order.name }}</td>
+        <td>{{ order.email }}</td>
+        <td>{{ order.meter_type }}</td>
+        <td>₦{{ "{:,.0f}".format(order.amount) }}</td>
+        <td>{{ order.reference }}</td>
+
+        <td>
+            <span class="{{ (order.status or 'Pending').lower() }}">
+    {{ order.status or 'Pending' }}
+</span>
+        </td>
+
+        <td>
+            <form action="{{ url_for('update_order_status', order_id=order.id) }}"
+                  method="POST">
+
+                <select name="status">
+                    <option value="Pending">Pending</option>
+                    <option value="Dispatched">Dispatched</option>
+                    <option value="Delivered">Delivered</option>
+                </select>
+
+                <button type="submit">
+                    Update
+                </button>
+
+            </form>
+        </td>
+
+    </tr>
+    {% endfor %}
+
+    </tbody>
+
+</table>
+</div>
+
+</body>
+</html>

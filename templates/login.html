@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style>
+
+/* =========================
+   GLOBAL RESET
+========================= */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #050505;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 100vh;
+    padding: 15px;
+}
+
+/* =========================
+   LOGIN CARD (MORE COMPACT)
+========================= */
+.login-container {
+    width: 100%;
+    max-width: 360px;
+
+    padding: 22px;
+    border-radius: 14px;
+
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid #1aff66;
+    box-shadow: 0 0 20px rgba(0, 255, 100, 0.12);
+
+    text-align: center;
+}
+
+/* =========================
+   LOGO (SMALL)
+========================= */
+.logo {
+    margin-bottom: 8px;
+}
+
+.logo img {
+    width: 60px;
+    max-width: 28vw;
+    height: auto;
+
+    display: block;
+    margin: 0 auto;
+
+    filter: drop-shadow(0 0 6px #1aff66);
+}
+
+/* =========================
+   TITLE
+========================= */
+h2 {
+    color: white;
+    margin-bottom: 4px;
+    font-size: 20px;
+}
+
+.subtitle {
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 18px;
+}
+
+/* =========================
+   FORM
+========================= */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================
+   FORM GROUP (TIGHTER)
+========================= */
+.form-group {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+label {
+    color: #ddd;
+    font-size: 12px;
+    margin-bottom: 4px;
+    display: block;
+}
+
+/* =========================
+   INPUT (SMALLER + CLEAN)
+========================= */
+input {
+    width: 100%;
+    padding: 10px;   /* reduced */
+    border-radius: 7px;
+
+    border: 1px solid #222;
+    background: #111;
+    color: white;
+
+    outline: none;
+    font-size: 14px;
+
+    transition: 0.3s;
+}
+
+input:focus {
+    border-color: #1aff66;
+    box-shadow: 0 0 6px rgba(26, 255, 102, 0.35);
+}
+
+/* =========================
+   BUTTON (SMALLER)
+========================= */
+input[type="submit"] {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: linear-gradient(90deg, #1aff66, #00cc55);
+    color: black;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+
+    font-size: 14px;
+}
+
+input[type="submit"]:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 12px #1aff66;
+}
+
+/* =========================
+   EXTRA LINKS (SMALLER)
+========================= */
+.extra {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.extra a {
+    color: #1aff66;
+    text-decoration: none;
+}
+
+/* =========================
+   MOBILE FIX
+========================= */
+@media (max-width: 480px) {
+
+    .login-container {
+        padding: 18px;
+        max-width: 340px;
+    }
+
+    .logo img {
+        width: 55px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+}
+
+/* =========================
+   SMALL HEIGHT FIX
+========================= */
+@media (max-height: 600px) {
+    body {
+        align-items: flex-start;
+    }
+
+    .login-container {
+        margin-top: 15px;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="login-container">
+
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+    </div>
+
+    <h2>Welcome Back!</h2>
+    <div class="subtitle">Login to your account</div>
+
+    <form method="post">
+        {{ form.csrf_token }}
+
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email(class="input") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="input") }}
+        </div>
+
+        <input type="submit" value="Login">
+    </form>
+
+    <div class="extra">
+        Don't have an account? <a href="{{url_for('register')}}">Register</a><br>
+        <a href="{{url_for('forget_password')}}">Forgot Password?</a>
+    </div>
+
+</div>
+
+{% endblock %}

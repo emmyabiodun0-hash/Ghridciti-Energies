@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ghridciti Energy — Prepaid Meter Platform</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='jj.png') }}" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- ═══════════════════ SPLASH SCREEN ═══════════════════ -->
+<div id="splash-screen">
+  <canvas id="particle-canvas"></canvas>
+  <div class="splash-content">
+    <div class="splash-logo-wrap">
+      <div class="logo-glow-ring"></div>
+      <img id="splash-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy Logo" />
+    </div>
+    <h1 class="splash-title">Ghridciti Energy</h1>
+    <p class="splash-tagline">Powering your world, seamlessly.</p>
+    <div class="splash-loader-wrap">
+      <p class="loading-text"><span class="loading-dot"></span> Loading Ghridciti Energy...</p>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lightning-left"></div>
+  <div class="lightning-right"></div>
+</div>
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" class="sidebar-logo-img" />
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <i class="fas fa-th-large"></i><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="buy-meter">
+        <i class="fas fa-bolt"></i><span>Apply for a prepaid meter</span>
+      </a>
+      <a href="#" class="nav-item" data-page="my-orders">
+        <i class="fas fa-list-alt"></i><span>My Orders</span>
+      </a>
+      <a href="#" class="nav-item" data-page="payments">
+        <i class="fas fa-credit-card"></i><span>Payments</span>
+      </a>
+      <a href="#" class="nav-item" data-page="address-book">
+        <i class="fas fa-map-marker-alt"></i><span>Address Book</span>
+      </a>
+      <a href="#" class="nav-item" data-page="notifications">
+        <i class="fas fa-bell"></i><span>Notifications</span>
+      </a>
+      <a href="#" class="nav-item" data-page="support">
+        <i class="fas fa-headset"></i><span>Support Center</span>
+      </a>
+      <a href="#" class="nav-item" data-page="profile">
+        <i class="fas fa-user"></i><span>Profile</span>
+      </a>
+      <a href="#" class="nav-item" data-page="settings">
+        <i class="fas fa-cog"></i><span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-promo">
+      <p>Get your prepaid meter delivered fast &amp; securely.</p>
+      <button class="btn-promo" onclick="navigateTo('buy-meter')">Apply for a prepaid meter Now</button>
+    </div>
+
+    <a href="{{ url_for('logout') }}" class="nav-item logout-item" id="logout-btn">
+      <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+    </a>
+
+    <div class="sidebar-footer-logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" />
+      <span class="sidebar-tagline">Powering your world, seamlessly.</span>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrap">
+
+    <!-- TOP NAVBAR -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+      <div class="topbar-brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="logo" class="topbar-logo" />
+        <span class="topbar-name">Ghridciti Energy</span>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" onclick="navigateTo('notifications')">
+          <i class="fas fa-bell"></i>
+          <span class="notif-badge" id="notif-badge">0</span>
+        </button>
+        <div class="user-info">
+          <div class="user-avatar">E</div>
+          <div class="user-meta">
+            <span class="user-name">{{ current_user.username }}</span>
+            <span class="user-role">Customer</span>
+          </div>
+        </div>
+        <div class="wallet-chip">
+          <i class="fas fa-wallet"></i>
+          <span>₦0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SIDEBAR OVERLAY for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- PAGES -->
+    <main class="content">
+
+      <!-- ── DASHBOARD PAGE ── -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h2 class="page-title">Welcome back, {{ current_user.username }} </h2>
+          <p class="page-sub">Here's what's happening with your account today.</p>
+        </div>
+
+        <!-- STATS CARDS — values injected by Flask -->
+        <div class="stats-grid">
+          <div class="stat-card" data-glow="green">
+            <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+            <div class="stat-body">
+              <p class="stat-label">Total Orders</p>
+              <h3 class="stat-value">{{ total_orders }}</h3>
+              <a href="#" class="stat-link" onclick="navigateTo('my-orders')">View all orders →</a>
+            </div>
+          </div>
+          <div class="stat-card" data-glow="yellow">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-body">
+              <p class="stat-label">Pending Orders</p>
+              <h3 class="stat-value">{{ pending_orders }}</h3>
+              <a href="#" class="stat-link" onclick="navigateTo('my-orders')">View pending →</a>
+            </div>
+          </div>
+          <div class="stat-card" data-glow="green">
+            <div class="stat-icon"><i class="fas fa-truck"></i></div>
+            <div class="stat-body">
+              <p class="stat-label">Dispatched Orders</p>
+              <h3 class="stat-value">{{ dispatched_orders }}</h3>
+              <a href="#" class="stat-link" onclick="navigateTo('my-orders')">View dispatched →</a>
+            </div>
+          </div>
+          <div class="stat-card" data-glow="green">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-body">
+              <p class="stat-label">Delivered Orders</p>
+              <h3 class="stat-value">{{ delivered_orders }}</h3>
+              <a href="#" class="stat-link" onclick="navigateTo('my-orders')">View delivered →</a>
+            </div>
+          </div>
+          <div class="stat-card" data-glow="yellow">
+            <div class="stat-icon"><i class="fas fa-naira-sign"></i></div>
+            <div class="stat-body">
+              <p class="stat-label">Total Amount Spent</p>
+              <h3 class="stat-value">₦{{ "{:,.0f}".format(total_amount) }}</h3>
+              <a href="#" class="stat-link" onclick="navigateTo('payments')">View transactions →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMPTY STATE — shown only when no orders exist -->
+        {% if total_orders == 0 %}
+        <div class="empty-state glass-card">
+          <div class="empty-icon">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&q=80" alt="Prepaid Meter" class="empty-meter-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <i class="fas fa-bolt" style="display:none"></i>
+          </div>
+          <h3>Welcome to Ghridciti Energy 👋</h3>
+          <p>You haven't placed any prepaid meter orders yet.</p>
+          <button class="btn-primary btn-lg" onclick="navigateTo('buy-meter')">
+            <i class="fas fa-shopping-cart"></i> Buy Your First Meter
+          </button>
+        </div>
+        {% else %}
+        <!-- HERO BANNER — shown when orders exist -->
+        <div class="hero-banner glass-card">
+          <div class="hero-text">
+            <h3>Buy your prepaid meter</h3>
+            <p class="hero-sub"><span>Fast</span> • <span>Reliable</span> • <span>Secure</span></p>
+            <p>Get your prepaid meter delivered to your doorstep in no time.</p>
+            <button class="btn-primary" onclick="navigateTo('buy-meter')">
+              <i class="fas fa-shopping-cart"></i> Apply for a prepaid meter Now
+            </button>
+          </div>
+          <div class="hero-visual">
+            <div class="meter-glow-img">
+              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80" alt="Prepaid Meter" class="hero-meter-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <div class="meter-icon-big" style="display:none"><i class="fas fa-tachometer-alt"></i></div>
+              <div class="lightning-anim l1"></div>
+              <div class="lightning-anim l2"></div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- DASHBOARD COLUMNS -->
+        <div class="dashboard-cols">
+          <div class="dash-main">
+
+            <!-- RECENT ORDERS — rendered by Flask (last 5, newest first) -->
+            <div class="section-card glass-card">
+              <div class="section-header">
+                <h4>Recent Orders</h4>
+                <a href="#" class="view-all" onclick="navigateTo('my-orders')">View all</a>
+              </div>
+              <div class="table-wrap">
+                <table class="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Reference</th>
+                      <th>Meter Type</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if orders %}
+                      {% for order in orders[:5] %}
+                      <tr>
+                        <td style="color:var(--green);font-weight:600">{{ order.reference }}</td>
+                        <td>{{ order.meter_type }}</td>
+                        <td style="font-weight:700">₦{{ "{:,.0f}".format(order.amount) }}</td>
+                        <td>
+                          <span class="badge badge-{{ order.status | lower }}">{{ order.status }}</span>
+                        </td>
+                        <td style="color:var(--text-muted)">{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</td>
+                      </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr class="empty-row">
+                        <td colspan="5">
+                          <div class="table-empty">
+                            <i class="fas fa-inbox"></i>
+                            <p>No orders yet.</p>
+                            <small>Purchase your first prepaid meter to get started.</small>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-side">
+
+            <!-- WALLET BALANCE -->
+            <div class="wallet-card glass-card">
+              <h4>Wallet Balance</h4>
+              <div class="wallet-amount">₦0</div>
+              <button class="btn-primary w-full" onclick="showToast('Wallet funding coming soon!')">
+                <i class="fas fa-plus-circle"></i> Fund Wallet
+              </button>
+            </div>
+
+            <!-- ORDER STATUS DONUT — data-attributes carry Flask values for JS to read -->
+            <div class="donut-card glass-card"
+                 id="donut-card"
+                 data-total="{{ total_orders }}"
+                 data-delivered="{{ delivered_orders }}"
+                 data-pending="{{ pending_orders }}"
+                 data-dispatched="{{ dispatched_orders }}">
+              <h4>Order Status Overview</h4>
+              <div class="donut-wrap">
+                <svg class="donut-svg" viewBox="0 0 120 120">
+                  <circle class="donut-bg" cx="60" cy="60" r="50" />
+                  <circle class="donut-seg delivered-seg" id="donut-delivered" cx="60" cy="60" r="50"
+                    stroke-dasharray="0 314" stroke-dashoffset="78.5" />
+                  <circle class="donut-seg pending-seg" id="donut-pending" cx="60" cy="60" r="50"
+                    stroke-dasharray="0 314" stroke-dashoffset="78.5" />
+                  <circle class="donut-seg dispatched-seg" id="donut-dispatched" cx="60" cy="60" r="50"
+                    stroke-dasharray="0 314" stroke-dashoffset="78.5" />
+                </svg>
+                <div class="donut-legend">
+                  <span><i style="background:#00FF3C"></i> Delivered
+                    <b id="leg-delivered">
+                      {% if total_orders > 0 %}
+                        {{ ((delivered_orders / total_orders) * 100) | round | int }}% ({{ delivered_orders }})
+                      {% else %}0% (0){% endif %}
+                    </b>
+                  </span>
+                  <span><i style="background:#FFC107"></i> Pending
+                    <b id="leg-pending">
+                      {% if total_orders > 0 %}
+                        {{ ((pending_orders / total_orders) * 100) | round | int }}% ({{ pending_orders }})
+                      {% else %}0% (0){% endif %}
+                    </b>
+                  </span>
+                  <span><i style="background:#4d9fff"></i> Dispatched
+                    <b id="leg-dispatched">
+                      {% if total_orders > 0 %}
+                        {{ ((dispatched_orders / total_orders) * 100) | round | int }}% ({{ dispatched_orders }})
+                      {% else %}0% (0){% endif %}
+                    </b>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- QUICK ACTIONS -->
+            <div class="quick-actions glass-card">
+              <h4>Quick Actions</h4>
+              <button class="qa-btn" onclick="navigateTo('buy-meter')"><i class="fas fa-shopping-cart"></i> Apply for a prepaid meter <i class="fas fa-arrow-right qa-arrow"></i></button>
+              <button class="qa-btn" onclick="navigateTo('payments')"><i class="fas fa-credit-card"></i> Make Payment <i class="fas fa-arrow-right qa-arrow"></i></button>
+              <button class="qa-btn" onclick="navigateTo('address-book')"><i class="fas fa-map-marker-alt"></i> Add New Address <i class="fas fa-arrow-right qa-arrow"></i></button>
+              <button class="qa-btn" onclick="navigateTo('my-orders')"><i class="fas fa-list"></i> View My Orders <i class="fas fa-arrow-right qa-arrow"></i></button>
+            </div>
+
+            <!-- NEED HELP -->
+            <div class="help-card glass-card">
+              <div class="help-icon"><i class="fas fa-headset"></i></div>
+              <div>
+                <h4>Need Help?</h4>
+                <p>We're here to help you 24/7. Contact our support team for any assistance.</p>
+                <button class="btn-primary mt-sm" onclick="navigateTo('support')">Contact Support</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ── BUY METER PAGE ── -->
+      <section class="page" id="page-buy-meter">
+        <div class="page-header">
+          <h2 class="page-title">Apply for a prepaid meter</h2>
+          <p class="page-sub">Select a meter type and get it delivered to your doorstep.</p>
+        </div>
+
+        <!-- STEP INDICATOR -->
+        <div class="steps-bar">
+          <div class="step active" id="step-1"><span>1</span> Select Meter</div>
+          <div class="step-line"></div>
+          <div class="step" id="step-2"><span>2</span> Delivery Address</div>
+          <div class="step-line"></div>
+          <div class="step" id="step-3"><span>3</span> Review &amp; Pay</div>
+          <div class="step-line"></div>
+          <div class="step" id="step-4"><span>4</span> Success</div>
+        </div>
+
+        <!-- STEP 1: METER SELECTION -->
+        <div id="meter-selection">
+          <h3 class="section-label">Select Meter Type</h3>
+          <div class="meter-grid">
+            <div class="meter-card glass-card" data-meter="Single Phase Meter" data-price="75000">
+              <div class="meter-img-wrap">
+                <img src="https://i.pinimg.com/1200x/1a/91/b4/1a91b4f1e9a63a2714e4aeae7e841987.jpg" alt="Single Phase Meter" class="meter-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="meter-icon-card" style="display:none"><i class="fas fa-plug"></i></div>
+              </div>
+              <h4>Single Phase Meter</h4>
+              <p class="meter-price">₦75,000</p>
+              <ul class="meter-features">
+                <li><i class="fas fa-check"></i> For homes &amp; small offices</li>
+                <li><i class="fas fa-check"></i> Tamper-proof casing</li>
+                <li><i class="fas fa-check"></i> Remote top-up ready</li>
+                <li><i class="fas fa-check"></i> 1-year warranty</li>
+              </ul>
+              <button class="btn-primary w-full meter-select-btn">Select</button>
+            </div>
+            <div class="meter-card glass-card" data-meter="Three Phase Meter" data-price="150000">
+              <div class="meter-img-wrap">
+                <img src="https://i.pinimg.com/736x/b5/89/25/b58925873cb24e9cfa245f016bc845a3.jpg" alt="Three Phase Meter" class="meter-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="meter-icon-card three" style="display:none"><i class="fas fa-charging-station"></i></div>
+              </div>
+              <div class="meter-badge">Popular</div>
+              <h4>Three Phase Meter</h4>
+              <p class="meter-price">₦150,000</p>
+              <ul class="meter-features">
+                <li><i class="fas fa-check"></i> For industries &amp; factories</li>
+                <li><i class="fas fa-check"></i> High load capacity</li>
+                <li><i class="fas fa-check"></i> Remote top-up ready</li>
+                <li><i class="fas fa-check"></i> 2-year warranty</li>
+              </ul>
+              <button class="btn-primary w-full meter-select-btn">Select</button>
+            </div>
+            <div class="meter-card glass-card" data-meter="Smart Meter" data-price="100000">
+              <div class="meter-img-wrap">
+                <img src="https://i.pinimg.com/736x/05/7a/b0/057ab06f36dd564a89f7f56cc96469c2.jpg" alt="Smart Meter" class="meter-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="meter-icon-card smart" style="display:none"><i class="fas fa-wifi"></i></div>
+              </div>
+              <h4>Smart Meter</h4>
+              <p class="meter-price">₦100,000</p>
+              <ul class="meter-features">
+                <li><i class="fas fa-check"></i> IoT-enabled monitoring</li>
+                <li><i class="fas fa-check"></i> Real-time usage alerts</li>
+                <li><i class="fas fa-check"></i> App-controlled top-up</li>
+                <li><i class="fas fa-check"></i> 3-year warranty</li>
+              </ul>
+              <button class="btn-primary w-full meter-select-btn">Select</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: DELIVERY ADDRESS FORM -->
+        <div id="delivery-form-wrap" class="hidden">
+          <h3 class="section-label">Delivery Address</h3>
+          <div class="glass-card form-card">
+            <form id="delivery-form" novalidate>
+              <div class="form-row">
+                <div class="form-group floating">
+                  <input type="text" id="f-name" placeholder=" " required />
+                  <label for="f-name">Full Name</label>
+                </div>
+                <div class="form-group floating">
+                  <input type="tel" id="f-phone" placeholder=" " required />
+                  <label for="f-phone">Phone Number</label>
+                </div>
+              </div>
+              <div class="form-group floating">
+                <input type="email" id="f-email" placeholder=" " required />
+                <label for="f-email">Email Address</label>
+              </div>
+              <div class="form-group floating">
+                <input type="text" id="f-addr1" placeholder=" " required />
+                <label for="f-addr1">Address Line 1</label>
+              </div>
+              <div class="form-group floating">
+                <input type="text" id="f-addr2" placeholder=" " />
+                <label for="f-addr2">Address Line 2 (Optional)</label>
+              </div>
+              <div class="form-row">
+                <div class="form-group floating">
+                  <input type="text" id="f-city" placeholder=" " required />
+                  <label for="f-city">City</label>
+                </div>
+                <div class="form-group floating">
+                  <input type="text" id="f-state" placeholder=" " required />
+                  <label for="f-state">State</label>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group floating">
+                  <input type="text" id="f-zip" placeholder=" " required />
+                  <label for="f-zip">ZIP Code</label>
+                </div>
+                <div class="form-group floating">
+                  <input type="text" id="f-landmark" placeholder=" " />
+                  <label for="f-landmark">Landmark</label>
+                </div>
+              </div>
+
+              <!-- ORDER SUMMARY INLINE -->
+              <div class="order-summary glass-card" id="order-summary">
+                <h4>Order Summary</h4>
+                <div class="summary-row"><span>Meter Type</span><b id="sum-meter">—</b></div>
+                <div class="summary-row"><span>Quantity</span><b>1</b></div>
+                <div class="summary-row"><span>Delivery Fee</span><b>₦5,000</b></div>
+                <div class="summary-row total-row"><span>Total Amount</span><b id="sum-total">—</b></div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-outline" onclick="showMeterSelection()">← Back</button>
+                <button type="submit" class="btn-primary">Proceed to Payment →</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- STEP 3: PAYMENT -->
+        <div id="payment-wrap" class="hidden">
+          <h3 class="section-label">Review &amp; Pay</h3>
+          <div class="glass-card pay-card">
+            <div class="pay-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" /></div>
+            <div class="pay-details">
+              <div class="pay-row"><span>Customer Name</span><b id="pay-name">—</b></div>
+              <div class="pay-row"><span>Customer Email</span><b id="pay-email">—</b></div>
+              <div class="pay-row"><span>Selected Meter</span><b id="pay-meter">—</b></div>
+              <div class="pay-row pay-amount-row"><span>Amount</span><b id="pay-amount" class="pay-amount-val">—</b></div>
+            </div>
+            <p class="pay-secure"><i class="fas fa-lock"></i> Secured by Paystack</p>
+            <button class="btn-paystack" id="pay-btn" onclick="processPayment()">
+              <i class="fas fa-bolt"></i> Pay with Paystack
+            </button>
+            <button type="button" class="btn-outline w-full mt-sm" onclick="showDeliveryForm()">← Back</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: SUCCESS -->
+        <div id="success-wrap" class="hidden">
+          <div class="success-card glass-card">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h3>Delivery Request Submitted Successfully</h3>
+            <p>Thank you for choosing Ghridciti Energy.</p>
+            <p>Your prepaid meter delivery request has been received and is awaiting review.</p>
+            <div class="success-actions">
+              <button class="btn-primary" onclick="window.location.href='/'">Return to Dashboard</button>
+              <button class="btn-outline" onclick="window.location.href='/'">Track Order</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── MY ORDERS PAGE ── -->
+      <section class="page" id="page-my-orders">
+        <div class="page-header">
+          <h2 class="page-title">My Orders</h2>
+          <p class="page-sub">Track and manage all your prepaid meter orders.</p>
+        </div>
+        <div class="glass-card">
+          <div class="table-wrap">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Meter Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if orders %}
+                  {% for order in orders %}
+                  <tr>
+                    <td style="color:var(--green);font-weight:600">{{ order.reference }}</td>
+                    <td>{{ order.meter_type }}</td>
+                    <td style="font-weight:700">₦{{ "{:,.0f}".format(order.amount) }}</td>
+                    <td>
+                      <span class="badge badge-{{ order.status | lower }}">{{ order.status }}</span>
+                    </td>
+                    <td style="color:var(--text-muted)">{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="empty-row">
+                    <td colspan="5">
+                      <div class="table-empty">
+                        <i class="fas fa-inbox"></i>
+                        <p>No orders yet.</p>
+                        <small>Purchase your first prepaid meter to get started.</small>
+                        <button class="btn-primary mt-sm" onclick="navigateTo('buy-meter')">Apply for a prepaid meter</button>
+                      </div>
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAYMENTS PAGE ── -->
+      <section class="page" id="page-payments">
+        <div class="page-header">
+          <h2 class="page-title">Payments</h2>
+          <p class="page-sub">View your payment history and transactions.</p>
+        </div>
+        <div class="glass-card">
+          {% if orders %}
+          <div class="table-wrap">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Meter Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td style="color:var(--green);font-weight:600">{{ order.reference }}</td>
+                  <td>{{ order.meter_type }}</td>
+                  <td style="font-weight:700">₦{{ "{:,.0f}".format(order.amount) }}</td>
+                  <td><span class="badge badge-{{ order.status | lower }}">{{ order.status }}</span></td>
+                  <td style="color:var(--text-muted)">{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="table-empty">
+            <i class="fas fa-credit-card"></i>
+            <p>No payment records yet.</p>
+            <small>Your transactions will appear here once you place an order.</small>
+            <button class="btn-primary mt-sm" onclick="navigateTo('buy-meter')">Apply for a prepaid meter</button>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- ── ADDRESS BOOK PAGE ── -->
+      <section class="page" id="page-address-book">
+        <div class="page-header">
+          <h2 class="page-title">Address Book</h2>
+          <p class="page-sub">Manage your saved delivery addresses.</p>
+        </div>
+        <div class="glass-card">
+          <div class="table-empty">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>No saved addresses yet.</p>
+            <small>Addresses you use during checkout will be saved here.</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── NOTIFICATIONS PAGE ── -->
+      <section class="page" id="page-notifications">
+        <div class="page-header">
+          <h2 class="page-title">Notifications</h2>
+          <p class="page-sub">Stay updated with your account activity.</p>
+        </div>
+        <div class="glass-card">
+          <div class="table-empty">
+            <i class="fas fa-bell-slash"></i>
+            <h4>You're all caught up.</h4>
+            <p>No new notifications.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SUPPORT CENTER PAGE ── -->
+      <section class="page" id="page-support">
+        <div class="page-header">
+          <h2 class="page-title">Support Center</h2>
+          <p class="page-sub">We're here to help you 24/7.</p>
+        </div>
+        <div class="support-grid">
+          <div class="faq-section">
+            <h3 class="section-label">Frequently Asked Questions</h3>
+            <div class="faq-list">
+              <div class="faq-card glass-card">
+                <button class="faq-q" onclick="toggleFaq(this)">How do I order a prepaid meter? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-a">Click "Apply for a prepaid meter" in the sidebar, select your meter type, fill in your delivery address, and complete payment via Paystack. Your meter will be delivered within 3–5 business days.</div>
+              </div>
+              <div class="faq-card glass-card">
+                <button class="faq-q" onclick="toggleFaq(this)">What payment methods are accepted? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-a">We accept all major debit/credit cards, bank transfers, and USSD payments through our Paystack integration.</div>
+              </div>
+              <div class="faq-card glass-card">
+                <button class="faq-q" onclick="toggleFaq(this)">How long does delivery take? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-a">Standard delivery takes 3–5 business days. Express delivery (1–2 days) is available for an additional fee depending on your location.</div>
+              </div>
+              <div class="faq-card glass-card">
+                <button class="faq-q" onclick="toggleFaq(this)">What is the warranty on meters? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-a">Single Phase: 1 year, Three Phase: 2 years, Smart Meter: 3 years. All warranties cover manufacturing defects.</div>
+              </div>
+              <div class="faq-card glass-card">
+                <button class="faq-q" onclick="toggleFaq(this)">Can I track my order? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-a">Yes! Visit "My Orders" in your dashboard to view real-time status updates for all your orders.</div>
+              </div>
+            </div>
+          </div>
+          <div class="support-side">
+            <div class="glass-card support-contact">
+              <div class="support-icon"><i class="fas fa-headset"></i></div>
+              <h3>Contact Support</h3>
+              <p>Our team is available Monday–Friday, 8am–6pm WAT.</p>
+              <button class="btn-primary w-full" onclick="Tawk_API.toggle()">
+                <i class="fas fa-comment-dots"></i> Start Live Chat
+              </button>
+              <button class="btn-outline w-full mt-sm" onclick="showToast('Email support: support@ghridciti.com')">
+                <i class="fas fa-envelope"></i> Email Support
+              </button>
+              <button class="btn-outline w-full mt-sm" onclick="showToast('Call us: +234 800 GHRID CI')">
+                <i class="fas fa-phone"></i> Call Us
+              </button>
+            </div>
+            <div class="glass-card help-center">
+              <h3>Help Center</h3>
+              <p>Browse our comprehensive documentation and guides.</p>
+              <ul class="help-links">
+                <li><a href="#"><i class="fas fa-book"></i> Getting Started Guide</a></li>
+                <li><a href="#"><i class="fas fa-video"></i> Video Tutorials</a></li>
+                <li><a href="#"><i class="fas fa-file-pdf"></i> Meter Installation Manual</a></li>
+                <li><a href="#"><i class="fas fa-shield-alt"></i> Warranty Policy</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PROFILE PAGE ── -->
+      <section class="page" id="page-profile">
+        <div class="page-header">
+          <h2 class="page-title">Profile</h2>
+          <p class="page-sub">Manage your personal information.</p>
+        </div>
+        <div class="glass-card profile-card">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar">E</div>
+            <div>
+              <h3>{{ current_user.username }}</h3>
+              <p>Customer · {{ current_user.email }}</p>
+            </div>
+          </div>
+          <div class="form-row mt-md">
+            <div class="form-group floating">
+              <input type="text" placeholder="" value="{{ current_user.username }}"/>
+              <label>First Name</label>
+            </div>
+            <div class="form-group floating">
+              <input type="text" placeholder=" " value="{{ current_user.username }}" />
+              <label>Last Name</label>
+            </div>
+          </div>
+          <div class="form-group floating">
+            <input type="email" placeholder=" " value="{{ current_user.email }}" />
+            <label>Email Address</label>
+          </div>
+          <div class="form-group floating">
+            <input type="tel" placeholder=" " value="{{ current_user.phone }}" />
+            <label>Phone Number</label>
+          </div>
+          <button class="btn-primary" onclick="showToast('Profile updated successfully!')">Save Changes</button>
+        </div>
+      </section>
+
+      <!-- ── SETTINGS PAGE ── -->
+      <section class="page" id="page-settings">
+        <div class="page-header">
+          <h2 class="page-title">Settings</h2>
+          <p class="page-sub">Customize your account preferences.</p>
+        </div>
+        <div class="glass-card settings-card">
+          <div class="setting-row">
+            <div><h4>Email Notifications</h4><p>Receive order updates via email</p></div>
+            <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><h4>SMS Alerts</h4><p>Get SMS notifications for deliveries</p></div>
+            <label class="toggle"><input type="checkbox" /><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><h4>Two-Factor Authentication</h4><p>Add an extra layer of security</p></div>
+            <label class="toggle"><input type="checkbox" /><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><h4>Dark Mode</h4><p>Always enabled for this platform</p></div>
+            <label class="toggle"><input type="checkbox" checked disabled /><span class="slider"></span></label>
+          </div>
+          <button class="btn-primary mt-md" onclick="showToast('Settings saved!')">Save Preferences</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <span>© 2024 Ghridciti Energy. All rights reserved.</span>
+      <div class="footer-socials">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- RECEIPT MODAL -->
+<div class="receipt-modal" id="receiptModal">
+  <div class="receipt-box">
+    <div class="receipt-header">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" class="receipt-logo" />
+      <h2>Payment Successful ✓</h2>
+      <p>Thank you for choosing Ghridciti Energy</p>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-item"><span>Receipt ID</span><strong id="receiptId"></strong></div>
+      <div class="receipt-item"><span>Full Name</span><strong id="receiptName"></strong></div>
+      <div class="receipt-item"><span>Email</span><strong id="receiptEmail"></strong></div>
+      <div class="receipt-item"><span>Meter Type</span><strong id="receiptMeter"></strong></div>
+      <div class="receipt-item"><span>Amount Paid</span><strong id="receiptAmount"></strong></div>
+      <div class="receipt-item"><span>Reference</span><strong id="receiptReference"></strong></div>
+      <div class="receipt-item"><span>Date</span><strong id="receiptDate"></strong></div>
+      <div class="receipt-item"><span>Status</span><strong class="receipt-status">Successful</strong></div>
+    </div>
+    <div class="receipt-buttons">
+      <button class="receipt-print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Receipt</button>
+      <button class="receipt-close-btn" onclick="closeReceipt()">Go to Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- Paystack SDK -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a3ab1fb18ccac1d4b829430/1jrqkegbd';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>
+

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f4f4;
+            padding:30px;
+        }
+
+        .container{
+            max-width:700px;
+            margin:auto;
+            background:#fff;
+            border-radius:8px;
+            overflow:hidden;
+            box-shadow:0 0 10px rgba(0,0,0,.1);
+        }
+
+        .header{
+            background:#0d6efd;
+            color:white;
+            text-align:center;
+            padding:20px;
+        }
+
+        .content{
+            padding:20px;
+        }
+
+        h3{
+            border-bottom:2px solid #0d6efd;
+            padding-bottom:5px;
+            color:#0d6efd;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-bottom:20px;
+        }
+
+        td{
+            padding:10px;
+            border-bottom:1px solid #ddd;
+        }
+
+        td:first-child{
+            font-weight:bold;
+            width:35%;
+        }
+
+        .footer{
+            text-align:center;
+            background:#f8f9fa;
+            padding:15px;
+            color:#666;
+            font-size:14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>New Prepaid Meter Order</h2>
+    </div>
+
+    <div class="content">
+
+        <h3>Customer Details</h3>
+
+        <table>
+            <tr><td>Name</td><td>{{ order.name }}</td></tr>
+            <tr><td>Phone</td><td>{{ order.phone }}</td></tr>
+            <tr><td>Email</td><td>{{ order.email }}</td></tr>
+        </table>
+
+        <h3>Delivery Address</h3>
+
+        <table>
+            <tr><td>Address 1</td><td>{{ order.address1 }}</td></tr>
+            <tr><td>Address 2</td><td>{{ order.address2 }}</td></tr>
+            <tr><td>City</td><td>{{ order.city }}</td></tr>
+            <tr><td>State</td><td>{{ order.state }}</td></tr>
+            <tr><td>Zip Code</td><td>{{ order.zip_code }}</td></tr>
+            <tr><td>Landmark</td><td>{{ order.landmark }}</td></tr>
+        </table>
+
+        <h3>Order Details</h3>
+
+        <table>
+            <tr><td>Meter Type</td><td>{{ order.meter_type }}</td></tr>
+            <tr><td>Amount</td><td>₦{{ order.amount }}</td></tr>
+            <tr><td>Reference</td><td>{{ order.reference }}</td></tr>
+            <tr><td>Status</td><td>{{ order.status }}</td></tr>
+        </table>
+
+    </div>
+
+    <div class="footer">
+        Meter Installation Portal
+    </div>
+
+</div>
+
+</body>
+</html>

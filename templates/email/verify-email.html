@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Email</title>
+
+<style>
+
+/* =========================
+   RESET
+========================= */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   BODY (CENTERED + RESPONSIVE)
+========================= */
+body{
+    background:#050505;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    min-height:100vh;
+    padding:20px;
+}
+
+/* =========================
+   MAIN CARD
+========================= */
+.container{
+    width:100%;
+    max-width:420px;
+
+    background:rgba(10,10,10,0.95);
+    border-radius:16px;
+
+    border:1px solid #1aff66;
+    box-shadow:0 0 25px rgba(26,255,102,0.12);
+
+    overflow:hidden;
+
+    text-align:center;
+}
+
+/* =========================
+   HEADER
+========================= */
+.header{
+    background:linear-gradient(135deg,#0f0f0f,#111111);
+    padding:18px;
+
+    color:#1aff66;
+    border-bottom:1px solid #1aff66;
+}
+
+.header h2{
+    font-size:18px;
+    letter-spacing:1px;
+}
+
+/* =========================
+   CONTENT
+========================= */
+main{
+    padding:25px 20px;
+}
+
+main p{
+    font-size:14px;
+    color:#bbb;
+    line-height:1.6;
+    margin-bottom:18px;
+}
+
+/* =========================
+   OTP BOX (RESPONSIVE)
+========================= */
+.otp-container{
+    display:inline-block;
+
+    padding:14px 22px;
+    font-size:28px;
+
+    font-weight:700;
+    letter-spacing:4px;
+
+    color:#1aff66;
+
+    border:2px dashed #1aff66;
+    border-radius:12px;
+
+    background:rgba(26,255,102,0.05);
+    box-shadow:0 0 12px rgba(26,255,102,0.15);
+}
+
+/* =========================
+   FOOTER
+========================= */
+.footer{
+    margin-top:18px;
+}
+
+.footer p{
+    font-size:12px;
+    color:#777;
+}
+
+/* =========================
+   MOBILE FIX
+========================= */
+@media (max-width: 480px){
+
+    .container{
+        max-width:340px;
+    }
+
+    main{
+        padding:20px 15px;
+    }
+
+    .otp-container{
+        font-size:22px;
+        padding:12px 18px;
+        letter-spacing:3px;
+    }
+
+    .header h2{
+        font-size:16px;
+    }
+}
+
+/* =========================
+   SMALL HEIGHT FIX
+========================= */
+@media (max-height: 600px){
+    body{
+        align-items:flex-start;
+    }
+
+    .container{
+        margin-top:20px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>Email Verification</h2>
+    </div>
+
+    <main>
+
+        <p>
+            Welcome {{ username }} to Ghridciti Energy.<br>
+            Use the OTP below to verify your email address.
+        </p>
+
+        <div class="otp-container">
+            {{ otp }}
+        </div>
+
+        <div class="footer">
+            <p>This code will expire in a few minutes.</p>
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
