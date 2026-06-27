@@ -207,7 +207,7 @@ def save_order():
 
         # Render the HTML email template
         html_text = render_template(
-            "emails/order_email.html",
+            "email/order_email.html",
             order=order
         )
 
