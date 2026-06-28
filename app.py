@@ -62,8 +62,6 @@ with app.app_context():
 
 @app.route("/")
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for("home"))
     return redirect(url_for("login"))
 
 @app.route("/register", methods=['POST','GET'])
