@@ -159,79 +159,121 @@ def verify_otp():
     return render_template("verify-otp.html")
 
 
-
-
 @app.route('/save-order', methods=['POST'])
 @login_required
 def save_order():
 
-    data = request.get_json()
+    print("\n========== SAVE ORDER START ==========")
 
-    reference = data["reference"]
+    try:
+        data = request.get_json()
 
-    headers = {
-        "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"
-    }
+        print("REQUEST DATA:")
+        print(data)
 
-    response = requests.get(
-        f"https://api.paystack.co/transaction/verify/{reference}",
-        headers=headers
-    )
+        reference = data["reference"]
 
-    result = response.json()
+        print("PAYSTACK REFERENCE:", reference)
 
-    if result["status"] and result["data"]["status"] == "success":
+        headers = {
+            "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"
+        }
 
-        # Save the order
-        order = MeterRequest(
-            name=data["name"],
-            phone=data["phone"],
-            email=data["email"],
-            address1=data["addr1"],
-            address2=data["addr2"],
-            city=data["city"],
-            state=data["state"],
-            zip_code=data["zip"],
-            landmark=data["landmark"],
-            meter_type=data["meter"],
-            amount=data["amount"],
-            reference=data["reference"],
-            status="Pending",
-            user_id=current_user.id
+        print("VERIFYING PAYMENT WITH PAYSTACK...")
+
+        response = requests.get(
+            f"https://api.paystack.co/transaction/verify/{reference}",
+            headers=headers
         )
 
-        db.session.add(order)
-        db.session.commit()
+        print("PAYSTACK RESPONSE STATUS:", response.status_code)
 
-        # Render the HTML email template
-        html_text = render_template(
-            "email/order_email.html",
-            order=order
-        )
+        result = response.json()
 
-        # Send the email using Brevo
-        try:
-            send_order_mail(
-                to="gemmy1866@gmail.com",
-                customer_name=order.name,
-                html_content=html_text
+        print("PAYSTACK RESPONSE:")
+        print(result)
+
+        if result["status"] and result["data"]["status"] == "success":
+
+            print("PAYMENT VERIFIED SUCCESSFULLY")
+
+            order = MeterRequest(
+                name=data["name"],
+                phone=data["phone"],
+                email=data["email"],
+                address1=data["addr1"],
+                address2=data["addr2"],
+                city=data["city"],
+                state=data["state"],
+                zip_code=data["zip"],
+                landmark=data["landmark"],
+                meter_type=data["meter"],
+                amount=data["amount"],
+                reference=data["reference"],
+                status="Pending",
+                user_id=current_user.id
             )
 
-        except Exception as e:
-            print("========== EMAIL ERROR ==========")
-            traceback.print_exc()
-            print(e)
-            print("=================================")
+            print("CREATED ORDER OBJECT")
+
+            db.session.add(order)
+
+            print("ORDER ADDED TO SESSION")
+
+            db.session.commit()
+
+            print("ORDER SAVED TO DATABASE")
+            print("DATABASE ORDER ID:", order.id)
+            print("DATABASE REFERENCE:", order.reference)
+
+            html_text = render_template(
+                "email/order_email.html",
+                order=order
+            )
+
+            print("EMAIL TEMPLATE RENDERED")
+
+            try:
+                send_order_mail(
+                    to="gemmy1866@gmail.com",
+                    customer_name=order.name,
+                    html_content=html_text
+                )
+
+                print("EMAIL SENT SUCCESSFULLY")
+
+            except Exception as e:
+                print("========== EMAIL ERROR ==========")
+                traceback.print_exc()
+                print(e)
+                print("=================================")
+
+            print("========== SAVE ORDER FINISHED ==========")
+
+            return jsonify({
+                "verified": True,
+                "message": "Payment verified, order saved, and email sent."
+            })
+
+        print("PAYMENT VERIFICATION FAILED")
+        print(result)
 
         return jsonify({
-            "verified": True,
-            "message": "Payment verified, order saved, and email sent."
-        })
+            "verified": False,
+            "message": "Payment verification failed."
+        }), 400
 
-    return jsonify({
-        "verified": False,
-        "message": "Payment verification failed."
-    }), 400
+    except Exception as e:
+
+        print("========== SAVE ORDER ERROR ==========")
+        traceback.print_exc()
+        print(e)
+        print("======================================")
+
+        return jsonify({
+            "verified": False,
+            "message": str(e)
+        }), 500
 
 
 
@@ -258,9 +300,8 @@ def paystack_webhook():
         hashlib.sha512
     ).hexdigest()
 
-    # Verify request came from Paystack
     if signature != expected_signature:
-        print("INVALID PAYSTACK SIGNATURE")
+        print("INVALID SIGNATURE")
         return "Invalid signature", 400
 
     event = request.get_json()
@@ -268,10 +309,7 @@ def paystack_webhook():
     print("EVENT RECEIVED:")
     print(event)
 
-    # Payment successful
     if event["event"] == "charge.success":
-
-        print("CHARGE SUCCESS EVENT")
 
         data = event["data"]
 
@@ -279,48 +317,34 @@ def paystack_webhook():
 
         print("REFERENCE:", reference)
 
-        # Find the order
         order = MeterRequest.query.filter_by(
             reference=reference
         ).first()
 
-        if order:
+        if not order:
+            print("ORDER NOT FOUND YET")
+            return "", 200
 
-            print("ORDER FOUND:", order.id)
+        existing_payment = Payment.query.filter_by(
+            reference=reference
+        ).first()
 
-            # Mark order as paid
-            order.status = "Paid"
+        if existing_payment:
+            print("PAYMENT ALREADY EXISTS")
+            return "", 200
 
-            # Check if payment already exists
-            existing_payment = Payment.query.filter_by(
-                reference=reference
-            ).first()
+        payment = Payment(
+            reference=reference,
+            amount=data["amount"] / 100,
+            status="success",
+            payment_method=data["channel"],
+            meter_request_id=order.id
+        )
 
-            if not existing_payment:
+        db.session.add(payment)
+        db.session.commit()
 
-                payment = Payment(
-                    reference=reference,
-                    amount=data["amount"] / 100,
-                    status="success",
-                    payment_method=data["channel"],
-                    meter_request_id=order.id
-                )
-
-                db.session.add(payment)
-
-                print("PAYMENT RECORD CREATED")
-
-            else:
-                print("PAYMENT ALREADY EXISTS")
-
-            db.session.commit()
-
-            print("DATABASE UPDATED SUCCESSFULLY")
-
-        else:
-            print("ORDER NOT FOUND FOR REFERENCE:", reference)
-
-    print("========== WEBHOOK FINISHED ==========")
+        print("PAYMENT SAVED")
 
     return "", 200
 
