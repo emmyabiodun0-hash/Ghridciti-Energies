@@ -243,6 +243,7 @@ from flask import request
 
 @app.route("/paystack/webhook", methods=["POST"])
 def paystack_webhook():
+    print("WEBHOOK RECEIVED")
 
     signature = request.headers.get(
         "x-paystack-signature"
@@ -259,6 +260,7 @@ def paystack_webhook():
     # Verify that the request came from Paystack
     if signature != expected_signature:
         return "Invalid signature", 400
+    print(event)
 
     event = request.get_json()
 
@@ -297,6 +299,7 @@ def paystack_webhook():
                 db.session.add(payment)
 
             db.session.commit()
+            print("WEBHOOK RECEIVED")
 
     return "", 200
 
