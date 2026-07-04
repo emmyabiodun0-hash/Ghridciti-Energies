@@ -243,7 +243,8 @@ from flask import request
 
 @app.route("/paystack/webhook", methods=["POST"])
 def paystack_webhook():
-    print("WEBHOOK RECEIVED")
+
+    print("========== WEBHOOK RECEIVED ==========")
 
     signature = request.headers.get(
         "x-paystack-signature"
@@ -257,26 +258,35 @@ def paystack_webhook():
         hashlib.sha512
     ).hexdigest()
 
-    # Verify that the request came from Paystack
+    # Verify request came from Paystack
     if signature != expected_signature:
+        print("INVALID PAYSTACK SIGNATURE")
         return "Invalid signature", 400
-    print(event)
 
     event = request.get_json()
 
+    print("EVENT RECEIVED:")
+    print(event)
+
     # Payment successful
     if event["event"] == "charge.success":
+
+        print("CHARGE SUCCESS EVENT")
 
         data = event["data"]
 
         reference = data["reference"]
 
-        # Find the order created earlier
+        print("REFERENCE:", reference)
+
+        # Find the order
         order = MeterRequest.query.filter_by(
             reference=reference
         ).first()
 
         if order:
+
+            print("ORDER FOUND:", order.id)
 
             # Mark order as paid
             order.status = "Paid"
@@ -298,8 +308,19 @@ def paystack_webhook():
 
                 db.session.add(payment)
 
+                print("PAYMENT RECORD CREATED")
+
+            else:
+                print("PAYMENT ALREADY EXISTS")
+
             db.session.commit()
-            print("WEBHOOK RECEIVED")
+
+            print("DATABASE UPDATED SUCCESSFULLY")
+
+        else:
+            print("ORDER NOT FOUND FOR REFERENCE:", reference)
+
+    print("========== WEBHOOK FINISHED ==========")
 
     return "", 200
 
