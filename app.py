@@ -163,39 +163,22 @@ def verify_otp():
 @login_required
 def save_order():
 
-    print("\n========== SAVE ORDER START ==========")
-
     try:
         data = request.get_json()
-
-        print("REQUEST DATA:")
-        print(data)
-
         reference = data["reference"]
-
-        print("PAYSTACK REFERENCE:", reference)
 
         headers = {
             "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"
         }
-
-        print("VERIFYING PAYMENT WITH PAYSTACK...")
 
         response = requests.get(
             f"https://api.paystack.co/transaction/verify/{reference}",
             headers=headers
         )
 
-        print("PAYSTACK RESPONSE STATUS:", response.status_code)
-
         result = response.json()
 
-        print("PAYSTACK RESPONSE:")
-        print(result)
-
         if result["status"] and result["data"]["status"] == "success":
-
-            print("PAYMENT VERIFIED SUCCESSFULLY")
 
             order = MeterRequest(
                 name=data["name"],
@@ -209,29 +192,18 @@ def save_order():
                 landmark=data["landmark"],
                 meter_type=data["meter"],
                 amount=data["amount"],
-                reference=data["reference"],
+                reference=reference,
                 status="Pending",
                 user_id=current_user.id
             )
 
-            print("CREATED ORDER OBJECT")
-
             db.session.add(order)
-
-            print("ORDER ADDED TO SESSION")
-
             db.session.commit()
-
-            print("ORDER SAVED TO DATABASE")
-            print("DATABASE ORDER ID:", order.id)
-            print("DATABASE REFERENCE:", order.reference)
 
             html_text = render_template(
                 "email/order_email.html",
                 order=order
             )
-
-            print("EMAIL TEMPLATE RENDERED")
 
             try:
                 send_order_mail(
@@ -239,24 +211,13 @@ def save_order():
                     customer_name=order.name,
                     html_content=html_text
                 )
-
-                print("EMAIL SENT SUCCESSFULLY")
-
             except Exception as e:
-                print("========== EMAIL ERROR ==========")
                 traceback.print_exc()
-                print(e)
-                print("=================================")
-
-            print("========== SAVE ORDER FINISHED ==========")
 
             return jsonify({
                 "verified": True,
                 "message": "Payment verified, order saved, and email sent."
             })
-
-        print("PAYMENT VERIFICATION FAILED")
-        print(result)
 
         return jsonify({
             "verified": False,
@@ -264,11 +225,7 @@ def save_order():
         }), 400
 
     except Exception as e:
-
-        print("========== SAVE ORDER ERROR ==========")
         traceback.print_exc()
-        print(e)
-        print("======================================")
 
         return jsonify({
             "verified": False,
@@ -286,12 +243,7 @@ from flask import request
 @app.route("/paystack/webhook", methods=["POST"])
 def paystack_webhook():
 
-    print("========== WEBHOOK RECEIVED ==========")
-
-    signature = request.headers.get(
-        "x-paystack-signature"
-    )
-
+    signature = request.headers.get("x-paystack-signature")
     payload = request.get_data()
 
     expected_signature = hmac.new(
@@ -301,50 +253,40 @@ def paystack_webhook():
     ).hexdigest()
 
     if signature != expected_signature:
-        print("INVALID SIGNATURE")
         return "Invalid signature", 400
 
     event = request.get_json()
 
-    print("EVENT RECEIVED:")
-    print(event)
-
-    if event["event"] == "charge.success":
+    # Only handle successful payments
+    if event.get("event") == "charge.success":
 
         data = event["data"]
+        reference = data.get("reference")
 
-        reference = data["reference"]
-
-        print("REFERENCE:", reference)
-
-        order = MeterRequest.query.filter_by(
-            reference=reference
-        ).first()
-
+        # Find order
+        order = MeterRequest.query.filter_by(reference=reference).first()
         if not order:
-            print("ORDER NOT FOUND YET")
             return "", 200
 
-        existing_payment = Payment.query.filter_by(
-            reference=reference
-        ).first()
-
+        # Prevent duplicate payment
+        existing_payment = Payment.query.filter_by(reference=reference).first()
         if existing_payment:
-            print("PAYMENT ALREADY EXISTS")
             return "", 200
 
+        # Update order status
+        order.status = "Paid"
+
+        # Save payment
         payment = Payment(
             reference=reference,
-            amount=data["amount"] / 100,
+            amount=data.get("amount", 0) / 100,
             status="success",
-            payment_method=data["channel"],
+            payment_method=data.get("channel"),
             meter_request_id=order.id
         )
 
         db.session.add(payment)
         db.session.commit()
-
-        print("PAYMENT SAVED")
 
     return "", 200
 
