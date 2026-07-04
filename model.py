@@ -88,7 +88,51 @@ class MeterRequest(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship("User", back_populates='meterrequest')
+    
 
+
+
+
+
+class Payment(db.Model):
+    __tablename__ = "payments"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    reference = db.Column(
+        db.String(100),
+        unique=True,
+        nullable=False
+    )
+
+    amount = db.Column(
+        db.Float,
+        nullable=False
+    )
+
+    status = db.Column(
+        db.String(50),
+        default="pending"
+    )
+
+    payment_method = db.Column(
+        db.String(50)
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    meter_request_id = db.Column(
+        db.Integer,
+        db.ForeignKey("meterrequest.id")
+    )
+
+    meter_request = db.relationship(
+        "MeterRequest",
+        backref="payments"
+    )
 
 
 

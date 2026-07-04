@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 import requests
 
 from db import db
-from model import  MeterRequest, OtpToken, ResetPasswordToken, User
+from model import  MeterRequest, OtpToken, Payment, ResetPasswordToken, User
 from flask import Flask, abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from form import Logins
@@ -16,7 +16,7 @@ from forms import LoginForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Mail, Message
 
-from utils import generate_random_otp, send_order_mail, send_registration_mail
+from utils import generate_random_otp, send_order_mail,send_registration_mail
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -232,6 +232,73 @@ def save_order():
         "verified": False,
         "message": "Payment verification failed."
     }), 400
+
+
+
+
+
+import hashlib
+import hmac
+from flask import request
+
+@app.route("/paystack/webhook", methods=["POST"])
+def paystack_webhook():
+
+    signature = request.headers.get(
+        "x-paystack-signature"
+    )
+
+    payload = request.get_data()
+
+    expected_signature = hmac.new(
+        app.config["PAYSTACK_SECRET_KEY"].encode(),
+        payload,
+        hashlib.sha512
+    ).hexdigest()
+
+    # Verify that the request came from Paystack
+    if signature != expected_signature:
+        return "Invalid signature", 400
+
+    event = request.get_json()
+
+    # Payment successful
+    if event["event"] == "charge.success":
+
+        data = event["data"]
+
+        reference = data["reference"]
+
+        # Find the order created earlier
+        order = MeterRequest.query.filter_by(
+            reference=reference
+        ).first()
+
+        if order:
+
+            # Mark order as paid
+            order.status = "Paid"
+
+            # Check if payment already exists
+            existing_payment = Payment.query.filter_by(
+                reference=reference
+            ).first()
+
+            if not existing_payment:
+
+                payment = Payment(
+                    reference=reference,
+                    amount=data["amount"] / 100,
+                    status="success",
+                    payment_method=data["channel"],
+                    meter_request_id=order.id
+                )
+
+                db.session.add(payment)
+
+            db.session.commit()
+
+    return "", 200
 
 
 @app.route('/admin')
