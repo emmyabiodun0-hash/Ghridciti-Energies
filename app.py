@@ -160,7 +160,8 @@ def verify_otp():
 
 
 import uuid
-from flask import jsonify, request
+import traceback
+from flask import jsonify, request, render_template
 from flask_login import login_required, current_user
 
 @app.route("/save-order", methods=["POST"])
@@ -173,6 +174,7 @@ def save_order():
         # Generate a unique reference
         reference = "GHR-" + uuid.uuid4().hex[:10].upper()
 
+        # Create order
         order = MeterRequest(
             name=data["name"],
             phone=data["phone"],
@@ -193,6 +195,29 @@ def save_order():
         db.session.add(order)
         db.session.commit()
 
+        # -----------------------------
+        # Send email to admin
+        # -----------------------------
+        try:
+            html_text = render_template(
+                "email/order_email.html",
+                order=order
+            )
+
+            send_order_mail(
+                to="gemmy1866@gmail.com",   # Admin email
+                customer_name=order.name,
+                html_content=html_text
+            )
+
+            print("Order email sent successfully.")
+
+        except Exception as e:
+            print("========== EMAIL ERROR ==========")
+            traceback.print_exc()
+            print(e)
+            print("=================================")
+
         return jsonify({
             "success": True,
             "reference": reference,
@@ -200,8 +225,13 @@ def save_order():
         })
 
     except Exception as e:
+
         db.session.rollback()
+
+        print("========== SAVE ORDER ERROR ==========")
+        traceback.print_exc()
         print(e)
+        print("======================================")
 
         return jsonify({
             "success": False,
