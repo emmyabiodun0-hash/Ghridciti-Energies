@@ -454,85 +454,160 @@ Order Status:    Pending Review
    PAYMENT — STEP 3 (REAL PAYSTACK)
 ═══════════════════════════════════ */
 function processPayment() {
+
   const total = (state.selectedMeter?.price || 0) + 5000;
-  const d     = state.deliveryData;
+  const d = state.deliveryData;
 
-  if (!d) { showToast('Missing delivery information.'); return; }
+  if (!d) {
+    showToast("Missing delivery information.");
+    return;
+  }
 
-  const handler = PaystackPop.setup({
-    key:      'pk_test_c99748c226a158ffb75051591bfb82c86c459266', // ← replace with your live key when ready
-    email:    d.email,
-    amount:   total * 100, // kobo
-    currency: 'NGN',
-    ref:      'GHR-' + Math.floor((Math.random() * 1000000000) + 1),
-    metadata: {
-      custom_fields: [
-        { display_name: 'Full Name',    variable_name: 'full_name',    value: d.name  },
-        { display_name: 'Phone Number', variable_name: 'phone_number', value: d.phone },
-        { display_name: 'Meter Type',   variable_name: 'meter_type',   value: state.selectedMeter?.name },
-      ],
+  // STEP 1: Create order first
+  fetch("/save-order", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
     },
-    callback: function (response) {
-      // Populate receipt
-      document.getElementById('receiptId').textContent        = 'RCPT-' + Math.floor(Math.random() * 1000000);
-      document.getElementById('receiptName').textContent      = d.name;
-      document.getElementById('receiptEmail').textContent     = d.email;
-      document.getElementById('receiptMeter').textContent     = state.selectedMeter?.name;
-      document.getElementById('receiptAmount').textContent    = '₦' + total.toLocaleString();
-      document.getElementById('receiptReference').textContent = response.reference;
-      document.getElementById('receiptDate').textContent      = new Date().toLocaleString('en-NG');
 
-      // Show receipt modal
-      document.getElementById('receiptModal').style.display = 'flex';
+    body: JSON.stringify({
 
-      // Copy reference to clipboard silently
-      navigator.clipboard?.writeText(response.reference).catch(() => {});
+      name: d.name,
+      phone: d.phone,
+      email: d.email,
 
-      // Save order to Flask database
-      fetch('/save-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reference: response.reference,
-          name:      d.name,
-          phone:     d.phone,
-          email:     d.email,
-          addr1:     d.addr1,
-          addr2:     d.addr2,
-          city:      d.city,
-          state:     d.state_,
-          zip:       d.zip,
-          landmark:  d.landmark,
-          meter:     state.selectedMeter?.name,
-          amount:    total,
-          status:    'Pending'
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        console.log('Order saved:', data);
-      })
-      .catch(err => {
-        console.error('Error saving order:', err);
-      });
+      addr1: d.addr1,
+      addr2: d.addr2,
 
-      // Add order to dashboard
-      addOrder();
-    },
-    onClose: function () {
-      showToast('Payment window closed. Try again when ready.');
-    },
+      city: d.city,
+      state: d.state_,
+      zip: d.zip,
+      landmark: d.landmark,
+
+      meter: state.selectedMeter?.name,
+
+      amount: total
+
+    })
+
+  })
+
+  .then(res => res.json())
+
+  .then(data => {
+
+    if (!data.success) {
+
+      showToast(data.message || "Unable to create order.");
+
+      return;
+
+    }
+
+    // STEP 2: Open Paystack
+    const handler = PaystackPop.setup({
+
+      key: "pk_test_c99748c226a158ffb75051591bfb82c86c459266",
+
+      email: d.email,
+
+      amount: total * 100,
+
+      currency: "NGN",
+
+      // Use reference from Flask
+      ref: data.reference,
+
+      metadata: {
+
+        custom_fields: [
+
+          {
+            display_name: "Full Name",
+            variable_name: "full_name",
+            value: d.name
+          },
+
+          {
+            display_name: "Phone Number",
+            variable_name: "phone_number",
+            value: d.phone
+          },
+
+          {
+            display_name: "Meter Type",
+            variable_name: "meter_type",
+            value: state.selectedMeter?.name
+          }
+
+        ]
+
+      },
+
+      callback: function(response) {
+
+        document.getElementById("receiptId").textContent =
+          "RCPT-" + Math.floor(Math.random() * 1000000);
+
+        document.getElementById("receiptName").textContent =
+          d.name;
+
+        document.getElementById("receiptEmail").textContent =
+          d.email;
+
+        document.getElementById("receiptMeter").textContent =
+          state.selectedMeter?.name;
+
+        document.getElementById("receiptAmount").textContent =
+          "₦" + total.toLocaleString();
+
+        document.getElementById("receiptReference").textContent =
+          response.reference;
+
+        document.getElementById("receiptDate").textContent =
+          new Date().toLocaleString("en-NG");
+
+        document.getElementById("receiptModal").style.display =
+          "flex";
+
+        navigator.clipboard
+          ?.writeText(response.reference)
+          .catch(() => {});
+
+        addOrder();
+
+      },
+
+      onClose: function() {
+
+        showToast("Payment window closed.");
+
+      }
+
+    });
+
+    handler.openIframe();
+
+  })
+
+  .catch(err => {
+
+    console.error(err);
+
+    showToast("Unable to create order.");
+
   });
 
-  handler.openIframe();
 }
 
 function closeReceipt() {
-  document.getElementById('receiptModal').style.display = 'none';
-  // Show success step and go to dashboard
+
+  document.getElementById("receiptModal").style.display = "none";
+
   showSuccess();
+
 }
 
 /* ═══════════════════════════════════

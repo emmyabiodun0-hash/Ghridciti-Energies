@@ -159,76 +159,52 @@ def verify_otp():
     return render_template("verify-otp.html")
 
 
-@app.route('/save-order', methods=['POST'])
+import uuid
+from flask import jsonify, request
+from flask_login import login_required, current_user
+
+@app.route("/save-order", methods=["POST"])
 @login_required
 def save_order():
 
     try:
         data = request.get_json()
-        reference = data["reference"]
 
-        headers = {
-            "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"
-        }
+        # Generate a unique reference
+        reference = "GHR-" + uuid.uuid4().hex[:10].upper()
 
-        response = requests.get(
-            f"https://api.paystack.co/transaction/verify/{reference}",
-            headers=headers
+        order = MeterRequest(
+            name=data["name"],
+            phone=data["phone"],
+            email=data["email"],
+            address1=data["addr1"],
+            address2=data.get("addr2"),
+            city=data["city"],
+            state=data["state"],
+            zip_code=data["zip"],
+            landmark=data.get("landmark"),
+            meter_type=data["meter"],
+            amount=data["amount"],
+            reference=reference,
+            status="Pending",
+            user_id=current_user.id
         )
 
-        result = response.json()
-
-        if result["status"] and result["data"]["status"] == "success":
-
-            order = MeterRequest(
-                name=data["name"],
-                phone=data["phone"],
-                email=data["email"],
-                address1=data["addr1"],
-                address2=data["addr2"],
-                city=data["city"],
-                state=data["state"],
-                zip_code=data["zip"],
-                landmark=data["landmark"],
-                meter_type=data["meter"],
-                amount=data["amount"],
-                reference=reference,
-                status="Pending",
-                user_id=current_user.id
-            )
-
-            db.session.add(order)
-            db.session.commit()
-
-            html_text = render_template(
-                "email/order_email.html",
-                order=order
-            )
-
-            try:
-                send_order_mail(
-                    to="gemmy1866@gmail.com",
-                    customer_name=order.name,
-                    html_content=html_text
-                )
-            except Exception as e:
-                traceback.print_exc()
-
-            return jsonify({
-                "verified": True,
-                "message": "Payment verified, order saved, and email sent."
-            })
+        db.session.add(order)
+        db.session.commit()
 
         return jsonify({
-            "verified": False,
-            "message": "Payment verification failed."
-        }), 400
+            "success": True,
+            "reference": reference,
+            "amount": order.amount
+        })
 
     except Exception as e:
-        traceback.print_exc()
+        db.session.rollback()
+        print(e)
 
         return jsonify({
-            "verified": False,
+            "success": False,
             "message": str(e)
         }), 500
 
@@ -257,36 +233,44 @@ def paystack_webhook():
 
     event = request.get_json()
 
-    # Only handle successful payments
-    if event.get("event") == "charge.success":
+    if event.get("event") != "charge.success":
+        return "", 200
 
-        data = event["data"]
-        reference = data.get("reference")
+    data = event["data"]
 
-        # Find order
-        order = MeterRequest.query.filter_by(reference=reference).first()
-        if not order:
-            return "", 200
+    reference = data["reference"]
 
-        # Prevent duplicate payment
-        existing_payment = Payment.query.filter_by(reference=reference).first()
-        if existing_payment:
-            return "", 200
+    order = MeterRequest.query.filter_by(
+        reference=reference
+    ).first()
 
-        # Update order status
-        order.status = "Paid"
+    if not order:
+        return "", 200
 
-        # Save payment
-        payment = Payment(
-            reference=reference,
-            amount=data.get("amount", 0) / 100,
-            status="success",
-            payment_method=data.get("channel"),
-            meter_request_id=order.id
-        )
+    # Avoid duplicate payments
+    payment = Payment.query.filter_by(
+        reference=reference
+    ).first()
 
-        db.session.add(payment)
-        db.session.commit()
+    if payment:
+        return "", 200
+
+    order.status = "Paid"
+
+    payment = Payment(
+        reference=reference,
+        amount=data["amount"] / 100,
+        status="success",
+        payment_method=data["channel"],
+        meter_request_id=order.id
+    )
+
+    db.session.add(payment)
+    db.session.commit()
+
+    # Optional: send email here
+    # html = render_template(...)
+    # send_order_mail(...)
 
     return "", 200
 
