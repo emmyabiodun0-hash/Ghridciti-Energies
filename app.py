@@ -164,17 +164,22 @@ import traceback
 from flask import jsonify, request, render_template
 from flask_login import login_required, current_user
 
+import uuid
+import traceback
+import requests
+
 @app.route("/save-order", methods=["POST"])
 @login_required
 def save_order():
 
     try:
+
         data = request.get_json()
 
-        # Generate a unique reference
+        # Generate unique payment reference
         reference = "GHR-" + uuid.uuid4().hex[:10].upper()
 
-        # Create order
+        # Create pending order
         order = MeterRequest(
             name=data["name"],
             phone=data["phone"],
@@ -195,48 +200,103 @@ def save_order():
         db.session.add(order)
         db.session.commit()
 
-        # -----------------------------
-        # Send email to admin
-        # -----------------------------
+        # Send order email (optional)
         try:
+
             html_text = render_template(
                 "email/order_email.html",
                 order=order
             )
 
             send_order_mail(
-                to="gemmy1866@gmail.com",   # Admin email
+                to="gemmy1866@gmail.com",
                 customer_name=order.name,
                 html_content=html_text
             )
 
-            print("Order email sent successfully.")
-
-        except Exception as e:
-            print("========== EMAIL ERROR ==========")
+        except Exception:
             traceback.print_exc()
-            print(e)
-            print("=================================")
+
+        # -----------------------------
+        # INITIALIZE PAYSTACK
+        # -----------------------------
+
+        headers = {
+            "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "email": order.email,
+            "amount": int(order.amount * 100),   # Kobo
+            "reference": reference,
+            "callback_url": "https://ghridciti-energies.onrender.com/payment-success",
+            "metadata": {
+                "customer_name": order.name,
+                "meter_type": order.meter_type,
+                "phone": order.phone
+            }
+        }
+
+        response = requests.post(
+            "https://api.paystack.co/transaction/initialize",
+            json=payload,
+            headers=headers
+        )
+
+        result = response.json()
+
+        if not result["status"]:
+
+            return jsonify({
+                "success": False,
+                "message": result["message"]
+            }), 400
 
         return jsonify({
+
             "success": True,
+
             "reference": reference,
-            "amount": order.amount
+
+            "authorization_url":
+                result["data"]["authorization_url"],
+
+            "access_code":
+                result["data"]["access_code"]
+
         })
 
     except Exception as e:
 
         db.session.rollback()
 
-        print("========== SAVE ORDER ERROR ==========")
         traceback.print_exc()
-        print(e)
-        print("======================================")
 
         return jsonify({
             "success": False,
             "message": str(e)
         }), 500
+    
+
+
+
+
+@app.route("/payment-success")
+@login_required
+def payment_success():
+
+    reference = request.args.get("reference")
+
+    order = MeterRequest.query.filter_by(
+        reference=reference
+    ).first()
+
+    return render_template(
+        "payment_success.html",
+        order=order,
+        reference=reference
+    )
 
 
 
@@ -430,30 +490,48 @@ def update_order_status(order_id):
 
 
 
-@app.get('/logout')
-@login_required
+@app.route("/logout")
 def logout():
     logout_user()
-    flash("Logged out successfully", "success")
-    return redirect(url_for('login'))
+    session.clear()
+    return redirect(url_for("login"))
+
+
+
+
+@app.before_request
+def refresh_session():
+    if current_user.is_authenticated:
+        session.permanent = True
+        session.modified = True
 
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
     form = LoginForm()
+
     if form.validate_on_submit():
         email = form.email.data.lower()
         password = form.password.data
+
         user = User.query.filter_by(email=email).first()
-        if user == None:
-            flash("Invalid Email", category='danger')
+
+        if user is None:
+            flash("Invalid Email", category="danger")
+
+        elif check_password_hash(user.password, password):
+
+            login_user(user)
+
+            # Start the inactivity timer
+            session.permanent = True
+
+            return redirect(url_for("home"))
+
         else:
-            if check_password_hash(user.password ,password):
-                login_user(user)
-                return redirect(url_for("home"))
-            else:
-                flash("invalid password" ,category='danger')
-    return render_template("login.html" ,form=form)
+            flash("Invalid Password", category="danger")
+
+    return render_template("login.html", form=form)
 
 
 

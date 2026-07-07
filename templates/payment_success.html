@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block style %}
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#050505;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+
+.success-card{
+    width:100%;
+    max-width:500px;
+    padding:40px;
+    text-align:center;
+
+    background:rgba(15,15,15,.92);
+
+    border:1px solid rgba(0,255,102,.15);
+
+    border-radius:20px;
+
+    backdrop-filter:blur(12px);
+
+    box-shadow:
+        0 0 25px rgba(0,255,102,.08),
+        0 0 60px rgba(0,255,102,.05);
+
+    box-sizing:border-box;
+}
+
+/* Logo */
+
+.logo{
+    display:flex;
+    justify-content:center;
+    margin-bottom:20px;
+}
+
+.logo img{
+    width:110px;
+    max-width:35vw;
+    height:auto;
+}
+
+/* Success Icon */
+
+.success-icon{
+    width:90px;
+    height:90px;
+
+    margin:0 auto 20px;
+
+    border-radius:50%;
+
+    background:#00ff66;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    color:#050505;
+
+    font-size:45px;
+    font-weight:bold;
+
+    box-shadow:0 0 25px rgba(0,255,102,.35);
+}
+
+/* Heading */
+
+h1{
+    color:#00ff66;
+    margin-bottom:15px;
+    font-size:30px;
+}
+
+/* Description */
+
+p{
+    color:#9ca3af;
+    line-height:1.8;
+    font-size:15px;
+}
+
+/* Reference */
+
+.reference{
+    margin:25px 0;
+
+    padding:15px;
+
+    border-radius:12px;
+
+    background:#0f0f0f;
+
+    border:1px solid rgba(0,255,102,.15);
+
+    color:white;
+
+    font-weight:bold;
+
+    word-break:break-all;
+}
+
+/* Buttons */
+
+.buttons{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+}
+
+.buttons a{
+    flex:1;
+
+    text-decoration:none;
+
+    padding:15px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+.primary-btn{
+    background:linear-gradient(135deg,#00ff66,#00cc52);
+    color:#050505;
+}
+
+.primary-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px rgba(0,255,102,.25);
+}
+
+.secondary-btn{
+    border:1px solid rgba(0,255,102,.25);
+    color:#00ff66;
+    background:#0f0f0f;
+}
+
+.secondary-btn:hover{
+    background:#161616;
+}
+
+.footer{
+    margin-top:25px;
+    color:#777;
+    font-size:13px;
+}
+
+/* Responsive */
+
+@media(max-width:480px){
+
+    .success-card{
+        padding:25px;
+    }
+
+    .logo img{
+        width:80px;
+    }
+
+    .success-icon{
+        width:75px;
+        height:75px;
+        font-size:38px;
+    }
+
+    h1{
+        font-size:24px;
+    }
+
+    p{
+        font-size:14px;
+    }
+
+    .buttons{
+        flex-direction:column;
+    }
+}
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="success-card">
+
+```
+<div class="logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Ghridciti Energy">
+</div>
+
+<div class="success-icon">
+    ✓
+</div>
+
+<h1>Application Submitted Successfully</h1>
+
+<p>
+    Your prepaid meter application has been received successfully.
+    Payment has been confirmed and your application is now being processed.
+</p>
+
+<div class="reference">
+    Reference: {{ reference }}
+</div>
+
+<div class="buttons">
+
+    <a href="{{ url_for('home') }}" class="primary-btn">
+        Dashboard
+    </a>
+
+    <a href="{{ url_for('home') }}#my-orders" class="secondary-btn">
+        My Applications
+    </a>
+
+</div>
+
+<div class="footer">
+    Ghridciti Energy • Powering Your Future
+</div>
+```
+
+</div>
+
+{% endblock %}

@@ -455,160 +455,66 @@ Order Status:    Pending Review
 ═══════════════════════════════════ */
 function processPayment() {
 
-  const total = (state.selectedMeter?.price || 0) + 5000;
-  const d = state.deliveryData;
+    const total = (state.selectedMeter?.price || 0) + 5000;
+    const d = state.deliveryData;
 
-  if (!d) {
-    showToast("Missing delivery information.");
-    return;
-  }
+    if (!d) {
+        showToast("Missing delivery information.");
+        return;
+    }
 
-  // STEP 1: Create order first
-  fetch("/save-order", {
+    fetch("/save-order", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: d.name,
+            phone: d.phone,
+            email: d.email,
 
-    method: "POST",
+            addr1: d.addr1,
+            addr2: d.addr2,
 
-    headers: {
-      "Content-Type": "application/json"
-    },
+            city: d.city,
+            state: d.state_,
+            zip: d.zip,
 
-    body: JSON.stringify({
+            landmark: d.landmark,
 
-      name: d.name,
-      phone: d.phone,
-      email: d.email,
+            meter: state.selectedMeter?.name,
 
-      addr1: d.addr1,
-      addr2: d.addr2,
+            amount: total
+        })
+    })
 
-      city: d.city,
-      state: d.state_,
-      zip: d.zip,
-      landmark: d.landmark,
+    .then(response => response.json())
 
-      meter: state.selectedMeter?.name,
+    .then(data => {
 
-      amount: total
+        if (!data.success) {
+
+            showToast(data.message || "Unable to start payment.");
+
+            return;
+
+        }
+
+        // Redirect customer to Paystack Checkout
+        window.location.href = data.authorization_url;
 
     })
 
-  })
+    .catch(error => {
 
-  .then(res => res.json())
+        console.error(error);
 
-  .then(data => {
-
-    if (!data.success) {
-
-      showToast(data.message || "Unable to create order.");
-
-      return;
-
-    }
-
-    // STEP 2: Open Paystack
-    const handler = PaystackPop.setup({
-
-      key: "pk_test_c99748c226a158ffb75051591bfb82c86c459266",
-
-      email: d.email,
-
-      amount: total * 100,
-
-      currency: "NGN",
-
-      // Use reference from Flask
-      ref: data.reference,
-
-      metadata: {
-
-        custom_fields: [
-
-          {
-            display_name: "Full Name",
-            variable_name: "full_name",
-            value: d.name
-          },
-
-          {
-            display_name: "Phone Number",
-            variable_name: "phone_number",
-            value: d.phone
-          },
-
-          {
-            display_name: "Meter Type",
-            variable_name: "meter_type",
-            value: state.selectedMeter?.name
-          }
-
-        ]
-
-      },
-
-      callback: function(response) {
-
-        document.getElementById("receiptId").textContent =
-          "RCPT-" + Math.floor(Math.random() * 1000000);
-
-        document.getElementById("receiptName").textContent =
-          d.name;
-
-        document.getElementById("receiptEmail").textContent =
-          d.email;
-
-        document.getElementById("receiptMeter").textContent =
-          state.selectedMeter?.name;
-
-        document.getElementById("receiptAmount").textContent =
-          "₦" + total.toLocaleString();
-
-        document.getElementById("receiptReference").textContent =
-          response.reference;
-
-        document.getElementById("receiptDate").textContent =
-          new Date().toLocaleString("en-NG");
-
-        document.getElementById("receiptModal").style.display =
-          "flex";
-
-        navigator.clipboard
-          ?.writeText(response.reference)
-          .catch(() => {});
-
-        addOrder();
-
-      },
-
-      onClose: function() {
-
-        showToast("Payment window closed.");
-
-      }
+        showToast("Something went wrong.");
 
     });
 
-    handler.openIframe();
-
-  })
-
-  .catch(err => {
-
-    console.error(err);
-
-    showToast("Unable to create order.");
-
-  });
-
 }
 
-function closeReceipt() {
-
-  document.getElementById("receiptModal").style.display = "none";
-
-  showSuccess();
-
-}
 
 /* ═══════════════════════════════════
    ORDER MANAGEMENT
@@ -689,3 +595,33 @@ function initReveal() {
 
 // Init reveal after splash clears
 setTimeout(initReveal, 3200);
+
+
+
+
+const TIMEOUT = 10 * 60 * 1000;
+
+let timer;
+
+function logout() {
+    window.location.href = "/logout";
+}
+
+function resetTimer() {
+    clearTimeout(timer);
+    timer = setTimeout(logout, TIMEOUT);
+}
+
+[
+    "mousemove",
+    "mousedown",
+    "click",
+    "scroll",
+    "keydown",
+    "touchstart",
+    "touchmove"
+].forEach(event => {
+    document.addEventListener(event, resetTimer, true);
+});
+
+resetTimer();
