@@ -282,81 +282,64 @@ def save_order():
 
 
 
-import requests
+
 
 @app.route("/payment-success")
 @login_required
 def payment_success():
 
-    reference = request.args.get("reference")
+    print("========== PAYMENT SUCCESS ==========")
 
-    if not reference:
-        return redirect(url_for("home"))
+    reference = request.args.get("reference")
+    print("Reference:", reference)
 
     headers = {
         "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"
     }
 
-    try:
+    response = requests.get(
+        f"https://api.paystack.co/transaction/verify/{reference}",
+        headers=headers
+    )
 
-        # Verify payment with Paystack
-        response = requests.get(
-            f"https://api.paystack.co/transaction/verify/{reference}",
-            headers=headers
-        )
+    result = response.json()
+    print("Paystack response:", result)
 
-        result = response.json()
+    if result["status"] and result["data"]["status"] == "success":
 
-        if result["status"] and result["data"]["status"] == "success":
+        order = MeterRequest.query.filter_by(reference=reference).first()
+        print("Order found:", order)
 
-            order = MeterRequest.query.filter_by(
-                reference=reference
-            ).first()
+        if order:
+            print("Status before:", order.status)
+            order.status = "Paid"
 
-            if order:
+            payment = Payment.query.filter_by(reference=reference).first()
 
-                # Update order status
-                order.status = "Paid"
+            if not payment:
+                payment = Payment(
+                    reference=reference,
+                    amount=result["data"]["amount"] / 100,
+                    status="success",
+                    payment_method=result["data"]["channel"],
+                    meter_request_id=order.id
+                )
+                db.session.add(payment)
+                print("Payment created.")
+            else:
+                print("Payment already exists.")
 
-                # Check if payment already exists
-                payment = Payment.query.filter_by(
-                    reference=reference
-                ).first()
+            db.session.commit()
+            print("Database committed.")
+            print("Status after:", order.status)
 
-                if not payment:
+    print("========== END PAYMENT SUCCESS ==========")
 
-                    payment = Payment(
-                        reference=reference,
-                        amount=result["data"]["amount"] / 100,
-                        status="success",
-                        payment_method=result["data"]["channel"],
-                        meter_request_id=order.id
-                    )
-
-                    db.session.add(payment)
-
-                db.session.commit()
-
-            return render_template(
-                "payment_success.html",
-                order=order,
-                reference=reference
-            )
-
-        else:
-            return redirect(url_for("home"))
-
-    except Exception as e:
-
-        db.session.rollback()
-
-        print("========== PAYMENT SUCCESS ERROR ==========")
-        print(e)
-        traceback.print_exc()
-        print("===========================================")
-
-        return redirect(url_for("home"))
-
+    return render_template(
+        "payment_success.html",
+        order=order,
+        reference=reference
+    )
 
 
 
