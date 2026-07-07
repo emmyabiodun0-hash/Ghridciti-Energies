@@ -282,21 +282,80 @@ def save_order():
 
 
 
+import requests
+
 @app.route("/payment-success")
 @login_required
 def payment_success():
 
     reference = request.args.get("reference")
 
-    order = MeterRequest.query.filter_by(
-        reference=reference
-    ).first()
+    if not reference:
+        return redirect(url_for("home"))
 
-    return render_template(
-        "payment_success.html",
-        order=order,
-        reference=reference
-    )
+    headers = {
+        "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"
+    }
+
+    try:
+
+        # Verify payment with Paystack
+        response = requests.get(
+            f"https://api.paystack.co/transaction/verify/{reference}",
+            headers=headers
+        )
+
+        result = response.json()
+
+        if result["status"] and result["data"]["status"] == "success":
+
+            order = MeterRequest.query.filter_by(
+                reference=reference
+            ).first()
+
+            if order:
+
+                # Update order status
+                order.status = "Paid"
+
+                # Check if payment already exists
+                payment = Payment.query.filter_by(
+                    reference=reference
+                ).first()
+
+                if not payment:
+
+                    payment = Payment(
+                        reference=reference,
+                        amount=result["data"]["amount"] / 100,
+                        status="success",
+                        payment_method=result["data"]["channel"],
+                        meter_request_id=order.id
+                    )
+
+                    db.session.add(payment)
+
+                db.session.commit()
+
+            return render_template(
+                "payment_success.html",
+                order=order,
+                reference=reference
+            )
+
+        else:
+            return redirect(url_for("home"))
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        print("========== PAYMENT SUCCESS ERROR ==========")
+        print(e)
+        traceback.print_exc()
+        print("===========================================")
+
+        return redirect(url_for("home"))
 
 
 
