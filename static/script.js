@@ -455,7 +455,7 @@ Order Status:    Pending Review
 ═══════════════════════════════════ */
 function processPayment() {
 
-    const btn = document.getElementById("payBtn");
+    const btn = document.getElementById("pay-btn");
 
     btn.disabled = true;
     btn.innerHTML = "Please wait...";
