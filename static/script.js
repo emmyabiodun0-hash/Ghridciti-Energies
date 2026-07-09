@@ -455,10 +455,17 @@ Order Status:    Pending Review
 ═══════════════════════════════════ */
 function processPayment() {
 
+    const btn = document.getElementById("payBtn");
+
+    btn.disabled = true;
+    btn.innerHTML = "Please wait...";
+
     const total = (state.selectedMeter?.price || 0) + 5000;
     const d = state.deliveryData;
 
     if (!d) {
+        btn.disabled = false;
+        btn.innerHTML = "Pay with Paystack";
         showToast("Missing delivery information.");
         return;
     }
@@ -472,47 +479,38 @@ function processPayment() {
             name: d.name,
             phone: d.phone,
             email: d.email,
-
             addr1: d.addr1,
             addr2: d.addr2,
-
             city: d.city,
             state: d.state_,
             zip: d.zip,
-
             landmark: d.landmark,
-
             meter: state.selectedMeter?.name,
-
             amount: total
         })
     })
-
     .then(response => response.json())
-
     .then(data => {
 
         if (!data.success) {
-
+            btn.disabled = false;
+            btn.innerHTML = "Pay with Paystack";
             showToast(data.message || "Unable to start payment.");
-
             return;
-
         }
 
-        // Redirect customer to Paystack Checkout
+        // Redirect to Paystack
         window.location.href = data.authorization_url;
-
     })
-
     .catch(error => {
 
         console.error(error);
 
+        btn.disabled = false;
+        btn.innerHTML = "Pay with Paystack";
+
         showToast("Something went wrong.");
-
     });
-
 }
 
 

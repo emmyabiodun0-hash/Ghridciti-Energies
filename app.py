@@ -164,9 +164,6 @@ import traceback
 from flask import jsonify, request, render_template
 from flask_login import login_required, current_user
 
-import uuid
-import traceback
-import requests
 
 @app.route("/save-order", methods=["POST"])
 @login_required
@@ -176,10 +173,10 @@ def save_order():
 
         data = request.get_json()
 
-        # Generate unique payment reference
+        # Generate unique reference
         reference = "GHR-" + uuid.uuid4().hex[:10].upper()
 
-        # Create pending order
+        # Save order
         order = MeterRequest(
             name=data["name"],
             phone=data["phone"],
@@ -200,27 +197,9 @@ def save_order():
         db.session.add(order)
         db.session.commit()
 
-        # Send order email (optional)
-        try:
-
-            html_text = render_template(
-                "email/order_email.html",
-                order=order
-            )
-
-            send_order_mail(
-                to="gemmy1866@gmail.com",
-                customer_name=order.name,
-                html_content=html_text
-            )
-
-        except Exception:
-            traceback.print_exc()
-
         # -----------------------------
-        # INITIALIZE PAYSTACK
+        # Initialize Paystack
         # -----------------------------
-
         headers = {
             "Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}",
             "Content-Type": "application/json"
@@ -230,7 +209,10 @@ def save_order():
             "email": order.email,
             "amount": int(order.amount * 100),   # Kobo
             "reference": reference,
-            "callback_url": "https://ghridciti-energies.onrender.com/payment-success",
+            "callback_url": url_for(
+                "payment_success",
+                _external=True
+            ),
             "metadata": {
                 "customer_name": order.name,
                 "meter_type": order.meter_type,
@@ -240,44 +222,43 @@ def save_order():
 
         response = requests.post(
             "https://api.paystack.co/transaction/initialize",
+            headers=headers,
             json=payload,
-            headers=headers
+            timeout=15
         )
 
         result = response.json()
 
-        if not result["status"]:
+        if not result.get("status"):
+
+            # Remove the order if Paystack initialization failed
+            db.session.delete(order)
+            db.session.commit()
 
             return jsonify({
                 "success": False,
-                "message": result["message"]
+                "message": result.get(
+                    "message",
+                    "Unable to initialize payment."
+                )
             }), 400
 
         return jsonify({
-
             "success": True,
-
             "reference": reference,
-
-            "authorization_url":
-                result["data"]["authorization_url"],
-
-            "access_code":
-                result["data"]["access_code"]
-
+            "authorization_url": result["data"]["authorization_url"],
+            "access_code": result["data"]["access_code"]
         })
 
     except Exception as e:
 
         db.session.rollback()
-
         traceback.print_exc()
 
         return jsonify({
             "success": False,
-            "message": str(e)
+            "message": "Something went wrong. Please try again."
         }), 500
-    
 
 
 
@@ -369,7 +350,6 @@ def paystack_webhook():
         return "", 200
 
     data = event["data"]
-
     reference = data["reference"]
 
     order = MeterRequest.query.filter_by(
@@ -379,7 +359,7 @@ def paystack_webhook():
     if not order:
         return "", 200
 
-    # Avoid duplicate payments
+    # Prevent duplicate payments
     payment = Payment.query.filter_by(
         reference=reference
     ).first()
@@ -387,6 +367,7 @@ def paystack_webhook():
     if payment:
         return "", 200
 
+    # Update order
     order.status = "Paid"
 
     payment = Payment(
@@ -400,12 +381,28 @@ def paystack_webhook():
     db.session.add(payment)
     db.session.commit()
 
-    # Optional: send email here
-    # html = render_template(...)
-    # send_order_mail(...)
+    # -------------------------
+    # SEND EMAIL TO ADMIN
+    # -------------------------
+    try:
+        html_text = render_template(
+            "email/order_email.html",
+            order=order
+        )
+
+        send_order_mail(
+            to="gemmy1866@gmail.com",
+            customer_name=order.name,
+            html_content=html_text
+        )
+
+        print(" Order email sent.")
+
+    except Exception as e:
+        print("EMAIL ERROR")
+        traceback.print_exc()
 
     return "", 200
-
 
 @app.route('/admin')
 @login_required
@@ -724,9 +721,25 @@ def new_reset_password():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @login_manager.user_loader
 def get_user(pk):
     return User.query.filter_by(id=int(pk)).first()
 
+
 if __name__ == "__main__":
+    
     app.run(debug=True)
