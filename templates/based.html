@@ -105,7 +105,7 @@
           <span class="notif-badge" id="notif-badge">0</span>
         </a>
         <div class="user-info">
-          <div class="user-avatar">E</div>
+          <div class="user-avatar">{{ current_user.username[0]|upper }}</div>
           <div class="user-meta">
             <span class="user-name">{{ current_user.username }}</span>
             <span class="user-role">Customer</span>

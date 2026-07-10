@@ -790,10 +790,6 @@ def support():
     return render_template('support.html')
 
 
-@app.route('/profile')
-@login_required
-def profile():
-    return render_template('profile.html')
 
 
 @app.route('/settings')
@@ -801,6 +797,79 @@ def profile():
 def settings():
     return render_template('settings.html')
 
+
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    total_orders = MeterRequest.query.filter_by(
+        user_id=current_user.id
+    ).count()
+
+    pending_orders = MeterRequest.query.filter_by(
+        user_id=current_user.id,
+        status="Pending"
+    ).count()
+
+    paid_orders = MeterRequest.query.filter_by(
+        user_id=current_user.id,
+        status="Paid"
+    ).count()
+
+    delivered_orders = MeterRequest.query.filter_by(
+        user_id=current_user.id,
+        status="Delivered"
+    ).count()
+
+    total_spent = db.session.query(
+        db.func.sum(MeterRequest.amount)
+    ).filter(
+        MeterRequest.user_id == current_user.id
+    ).scalar() or 0
+
+    return render_template(
+        "profile.html",
+        total_orders=total_orders,
+        pending_orders=pending_orders,
+        paid_orders=paid_orders,
+        delivered_orders=delivered_orders,
+        total_spent=total_spent
+    )
+
+
+
+@app.route("/edit-profile", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+
+    if request.method == "POST":
+
+        username = request.form.get("username", "").strip()
+
+        if not username:
+            flash("Username cannot be empty.", "danger")
+            return redirect(url_for("edit_profile"))
+
+        # Check if another user already has this username
+        existing_user = User.query.filter(
+            User.username == username,
+            User.id != current_user.id
+        ).first()
+
+        if existing_user:
+            flash("Username already exists.", "danger")
+            return redirect(url_for("edit_profile"))
+
+        current_user.username = username
+
+        db.session.commit()
+
+        flash("Profile updated successfully.", "success")
+
+        return redirect(url_for("profile"))
+
+    return render_template("edit-profile.html")
 
 
 

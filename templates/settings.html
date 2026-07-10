@@ -1,0 +1,214 @@
+{% extends "based.html" %}
+{% block title %}Settings — Ghridciti Energy{% endblock %}
+
+{% block content %}
+<section class="page active" id="page-settings">
+  <div class="page-header">
+    <h2 class="page-title">Settings</h2>
+    <p class="page-sub">Customize your account preferences.</p>
+  </div>
+
+  <div class="glass-card settings-card">
+    <div class="setting-row">
+      <div><h4>Email Notifications</h4><p>Receive order updates via email</p></div>
+      <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <div><h4>SMS Alerts</h4><p>Get SMS notifications for deliveries</p></div>
+      <label class="toggle"><input type="checkbox" /><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <div><h4>Two-Factor Authentication</h4><p>Add an extra layer of security</p></div>
+      <label class="toggle"><input type="checkbox" /><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <div><h4>Dark Mode</h4><p>Always enabled for this platform</p></div>
+      <label class="toggle"><input type="checkbox" checked disabled /><span class="slider"></span></label>
+    </div>
+    <button class="btn-primary mt-md" onclick="showToast('Settings saved!')">Save Preferences</button>
+  </div>
+</section>
+
+<div class="toast" id="settings-toast"></div>
+
+<style>
+  /* ═══════════════════════════════════════════════
+     SETTINGS PAGE — self-contained styles
+     Reuses the same color system as the rest of the
+     dashboard: #0B0B0B (60%) | White/Gray (30%) | #00FF3C + #FFC107 (10%)
+  ═══════════════════════════════════════════════ */
+  #page-settings {
+    --bg2:         #111111;
+    --surface2:    #222222;
+    --border:      rgba(255,255,255,0.07);
+    --green:       #00FF3C;
+    --green-dim:   rgba(0, 255, 60, 0.12);
+    --green-glow:  0 0 20px rgba(0,255,60,0.4);
+    --text:        #ffffff;
+    --text-muted:  #888888;
+    --radius:      14px;
+    --radius-sm:   8px;
+    --transition:  0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  #page-settings .page-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  #page-settings .page-sub {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  #page-settings .page-header { margin-bottom: 1.75rem; }
+  #page-settings .mt-md { margin-top: 1.25rem; }
+
+  /* Glass card base */
+  #page-settings .glass-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: var(--transition);
+  }
+
+  #page-settings .settings-card {
+    padding: 1.5rem;
+    max-width: 600px;
+    color: var(--text);
+  }
+
+  #page-settings .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+  }
+  #page-settings .setting-row:last-of-type { border: none; }
+  #page-settings .setting-row h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    color: var(--text);
+  }
+  #page-settings .setting-row p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* Toggle switch */
+  #page-settings .toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  #page-settings .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  #page-settings .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--surface2);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  #page-settings .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    bottom: 3px;
+    left: 3px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+  #page-settings .toggle input:checked + .slider {
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+  }
+  #page-settings .toggle input:checked + .slider::before {
+    transform: translateX(20px);
+    background: var(--green);
+  }
+  #page-settings .toggle input:disabled + .slider {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  /* Primary button */
+  #page-settings .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--green);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+  }
+  #page-settings .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,255,60,0.4);
+  }
+
+  /* Toast (only used by this page, scoped id) */
+  #settings-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: #1a1a1a;
+    border: 1px solid rgba(0,255,60,0.3);
+    color: #ffffff;
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    z-index: 9998;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    max-width: 320px;
+    pointer-events: none;
+  }
+  #settings-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  @media (max-width: 480px) {
+    #page-settings .setting-row { align-items: flex-start; }
+  }
+</style>
+
+<script>
+  // Local fallback in case a global showToast() isn't defined in based.html
+  if (typeof showToast !== 'function') {
+    function showToast(message) {
+      var el = document.getElementById('settings-toast');
+      if (!el) return;
+      el.textContent = message;
+      el.classList.add('show');
+      clearTimeout(window.__settingsToastTimer);
+      window.__settingsToastTimer = setTimeout(function () {
+        el.classList.remove('show');
+      }, 2500);
+    }
+  }
+</script>
+{% endblock %}

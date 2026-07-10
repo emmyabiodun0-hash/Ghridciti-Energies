@@ -1,38 +1,192 @@
 {% extends "based.html" %}
 {% block title %}Profile — Ghridciti Energy{% endblock %}
+
 {% block content %}
 <section class="page active" id="page-profile">
+
   <div class="page-header">
     <h2 class="page-title">Profile</h2>
-    <p class="page-sub">Manage your personal information.</p>
+    <p class="page-sub">Your account details and order activity, all in one place.</p>
   </div>
+
+  <!-- ============ PROFILE HEADER ============ -->
   <div class="glass-card profile-card">
     <div class="profile-avatar-wrap">
-      <div class="profile-avatar">E</div>
+      <div class="profile-avatar">{{ current_user.username[0]|upper }}</div>
       <div>
         <h3>{{ current_user.username }}</h3>
-        <p>Customer · {{ current_user.email }}</p>
+        <p><i class="fa-solid fa-envelope"></i> {{ current_user.email }}</p>
       </div>
     </div>
-    <div class="form-row mt-md">
-      <div class="form-group floating">
-        <input type="text" placeholder="" value="{{ current_user.username }}"/>
-        <label>First Name</label>
-      </div>
-      <div class="form-group floating">
-        <input type="text" placeholder=" " value="{{ current_user.username }}" />
-        <label>Last Name</label>
-      </div>
+
+    <div class="profile-badges">
+      {% if current_user.is_verified %}
+      <span class="badge badge-completed"><i class="fa-solid fa-circle-check"></i> Verified Account</span>
+      {% else %}
+      <span class="badge badge-pending"><i class="fa-solid fa-triangle-exclamation"></i> Not Verified</span>
+      {% endif %}
+      <span class="badge badge-dispatched"><i class="fa-solid fa-id-card"></i> Customer ID: #{{ current_user.id }}</span>
     </div>
-    <div class="form-group floating">
-      <input type="email" placeholder=" " value="{{ current_user.email }}" />
-      <label>Email Address</label>
+
+    <div class="profile-actions mt-md">
+      <a href="{{ url_for('edit_profile') }}" class="btn-primary">
+        <i class="fa-solid fa-pen"></i> Edit Profile
+      </a>
+      <a href="{{ url_for('forget_password') }}" class="btn-outline">
+        <i class="fa-solid fa-lock"></i> Change Password
+      </a>
+      <a href="{{ url_for('logout') }}" class="btn-outline btn-logout">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
     </div>
-    <div class="form-group floating">
-      <input type="tel" placeholder=" " value="{{ current_user.phone if current_user.phone else '' }}" />
-      <label>Phone Number</label>
-    </div>
-    <button class="btn-primary" onclick="showToast('Profile updated successfully!')">Save Changes</button>
   </div>
+
+  <!-- ============ STATS SECTION ============ -->
+  <div class="page-header mt-md">
+    <h2 class="page-title" style="font-size:1.2rem;">Order Statistics</h2>
+    <p class="page-sub">A quick snapshot of your activity on Ghridciti Energy.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="glass-card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+      <div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value">{{ total_orders }}</div>
+      </div>
+    </div>
+
+    <div class="glass-card stat-card" data-glow="yellow">
+      <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div>
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value">{{ pending_orders }}</div>
+      </div>
+    </div>
+
+    <div class="glass-card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
+      <div>
+        <div class="stat-label">Paid Orders</div>
+        <div class="stat-value">{{ paid_orders }}</div>
+      </div>
+    </div>
+
+    <div class="glass-card stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div>
+        <div class="stat-label">Delivered Orders</div>
+        <div class="stat-value">{{ delivered_orders }}</div>
+      </div>
+    </div>
+
+    <div class="glass-card stat-card stat-card-wide">
+      <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div>
+        <div class="stat-label">Total Amount Spent</div>
+        <div class="stat-value">₦{{ "{:,.2f}".format(total_spent) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ACCOUNT INFORMATION ============ -->
+  <div class="page-header mt-md">
+    <h2 class="page-title" style="font-size:1.2rem;">Account Information</h2>
+    <p class="page-sub">The details tied to your Ghridciti Energy account.</p>
+  </div>
+
+  <div class="glass-card settings-card">
+    <div class="setting-row">
+      <div>
+        <h4><i class="fa-solid fa-user"></i> Username</h4>
+        <p>{{ current_user.username }}</p>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <h4><i class="fa-solid fa-envelope"></i> Email Address</h4>
+        <p>{{ current_user.email }}</p>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <h4><i class="fa-solid fa-shield-halved"></i> Verification Status</h4>
+        <p>
+          {% if current_user.is_verified %}
+          <span class="badge badge-completed">Verified</span>
+          {% else %}
+          <span class="badge badge-pending">Not Verified</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <h4><i class="fa-solid fa-id-card"></i> Customer ID</h4>
+        <p>#{{ current_user.id }}</p>
+      </div>
+    </div>
+  </div>
+
 </section>
+
+<style>
+  /* Scoped additions only — every color below reuses the site's existing
+     CSS custom properties (--green, --gold, --text-muted, --border, etc.)
+     defined in the main stylesheet. No new colors are introduced. */
+
+  #page-profile .profile-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  #page-profile .profile-badges .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  #page-profile .profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Logout keeps the same gold treatment already used for .logout-item in the sidebar */
+  #page-profile .btn-logout {
+    color: var(--gold);
+    border-color: rgba(255,193,7,0.3);
+  }
+  #page-profile .btn-logout:hover {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* Let the "Total Amount Spent" card span the full row like the rest of the dashboard's wide cards */
+  #page-profile .stat-card-wide {
+    grid-column: 1 / -1;
+  }
+
+  #page-profile .settings-card .setting-row h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #page-profile .settings-card .setting-row h4 i {
+    color: var(--green);
+    width: 16px;
+    text-align: center;
+  }
+
+  @media (max-width: 680px) {
+    #page-profile .profile-actions a { flex: 1; justify-content: center; }
+  }
+</style>
 {% endblock %}
