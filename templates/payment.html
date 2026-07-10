@@ -1,0 +1,40 @@
+{% extends "based.html" %}
+{% block title %}Review & Pay — Ghridciti Energy{% endblock %}
+{% block content %}
+<section class="page active" id="page-payment">
+  <div class="page-header">
+    <h2 class="page-title">Apply for a prepaid meter</h2>
+    <p class="page-sub">Review your order and complete payment.</p>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps-bar">
+    <div class="step done" id="step-1"><span>1</span> Select Meter</div>
+    <div class="step-line"></div>
+    <div class="step done" id="step-2"><span>2</span> Delivery Address</div>
+    <div class="step-line"></div>
+    <div class="step active" id="step-3"><span>3</span> Review &amp; Pay</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-4"><span>4</span> Success</div>
+  </div>
+
+  <h3 class="section-label">Review &amp; Pay</h3>
+  <div class="glass-card pay-card">
+    <div class="pay-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" /></div>
+    <div class="pay-details">
+      <div class="pay-row"><span>Customer Name</span><b id="pay-name">—</b></div>
+      <div class="pay-row"><span>Customer Email</span><b id="pay-email">—</b></div>
+      <div class="pay-row"><span>Selected Meter</span><b id="pay-meter">—</b></div>
+      <div class="pay-row pay-amount-row"><span>Amount</span><b id="pay-amount" class="pay-amount-val">—</b></div>
+    </div>
+    <p class="pay-secure"><i class="fas fa-lock"></i> Secured by Paystack</p>
+    <button class="btn-paystack" id="pay-btn" onclick="processPayment()">
+      <i class="fas fa-bolt"></i> Pay with Paystack
+    </button>
+    <a href="{{ url_for('address_form') }}" class="btn-outline w-full mt-sm" style="text-decoration:none;text-align:center">← Back</a>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='payment.js') }}"></script>
+{% endblock %}

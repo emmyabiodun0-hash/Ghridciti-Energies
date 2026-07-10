@@ -1,0 +1,51 @@
+{% extends "based.html" %}
+{% block title %}My Orders — Ghridciti Energy{% endblock %}
+{% block content %}
+<section class="page active" id="page-my-orders">
+  <div class="page-header">
+    <h2 class="page-title">My Orders</h2>
+    <p class="page-sub">Track and manage all your prepaid meter orders.</p>
+  </div>
+  <div class="glass-card">
+    <div class="table-wrap">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Meter Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if orders %}
+            {% for order in orders %}
+            <tr>
+              <td style="color:var(--green);font-weight:600">{{ order.reference }}</td>
+              <td>{{ order.meter_type }}</td>
+              <td style="font-weight:700">₦{{ "{:,.0f}".format(order.amount) }}</td>
+              <td>
+                <span class="badge badge-{{ order.status | lower }}">{{ order.status }}</span>
+              </td>
+              <td style="color:var(--text-muted)">{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="empty-row">
+              <td colspan="5">
+                <div class="table-empty">
+                  <i class="fas fa-inbox"></i>
+                  <p>No orders yet.</p>
+                  <small>Purchase your first prepaid meter to get started.</small>
+                  <a class="btn-primary mt-sm" href="{{ url_for('apply_meter') }}" style="text-decoration:none">Apply for a prepaid meter</a>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

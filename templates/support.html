@@ -1,0 +1,63 @@
+{% extends "based.html" %}
+{% block title %}Support Center — Ghridciti Energy{% endblock %}
+{% block content %}
+<section class="page active" id="page-support">
+  <div class="page-header">
+    <h2 class="page-title">Support Center</h2>
+    <p class="page-sub">We're here to help you 24/7.</p>
+  </div>
+  <div class="support-grid">
+    <div class="faq-section">
+      <h3 class="section-label">Frequently Asked Questions</h3>
+      <div class="faq-list">
+        <div class="faq-card glass-card">
+          <button class="faq-q" onclick="toggleFaq(this)">How do I order a prepaid meter? <i class="fas fa-chevron-down"></i></button>
+          <div class="faq-a">Click "Apply for a prepaid meter" in the sidebar, select your meter type, fill in your delivery address, and complete payment via Paystack. Your meter will be delivered within 3–5 business days.</div>
+        </div>
+        <div class="faq-card glass-card">
+          <button class="faq-q" onclick="toggleFaq(this)">What payment methods are accepted? <i class="fas fa-chevron-down"></i></button>
+          <div class="faq-a">We accept all major debit/credit cards, bank transfers, and USSD payments through our Paystack integration.</div>
+        </div>
+        <div class="faq-card glass-card">
+          <button class="faq-q" onclick="toggleFaq(this)">How long does delivery take? <i class="fas fa-chevron-down"></i></button>
+          <div class="faq-a">Standard delivery takes 3–5 business days. Express delivery (1–2 days) is available for an additional fee depending on your location.</div>
+        </div>
+        <div class="faq-card glass-card">
+          <button class="faq-q" onclick="toggleFaq(this)">What is the warranty on meters? <i class="fas fa-chevron-down"></i></button>
+          <div class="faq-a">Single Phase: 1 year, Three Phase: 2 years, Smart Meter: 3 years. All warranties cover manufacturing defects.</div>
+        </div>
+        <div class="faq-card glass-card">
+          <button class="faq-q" onclick="toggleFaq(this)">Can I track my order? <i class="fas fa-chevron-down"></i></button>
+          <div class="faq-a">Yes! Visit "My Orders" in your dashboard to view real-time status updates for all your orders.</div>
+        </div>
+      </div>
+    </div>
+    <div class="support-side">
+      <div class="glass-card support-contact">
+        <div class="support-icon"><i class="fas fa-headset"></i></div>
+        <h3>Contact Support</h3>
+        <p>Our team is available Monday–Friday, 8am–6pm WAT.</p>
+        <button class="btn-primary w-full" onclick="Tawk_API.toggle()">
+          <i class="fas fa-comment-dots"></i> Start Live Chat
+        </button>
+        <button class="btn-outline w-full mt-sm" onclick="showToast('Email support: support@ghridciti.com')">
+          <i class="fas fa-envelope"></i> Email Support
+        </button>
+        <button class="btn-outline w-full mt-sm" onclick="showToast('Call us: +234 800 GHRID CI')">
+          <i class="fas fa-phone"></i> Call Us
+        </button>
+      </div>
+      <div class="glass-card help-center">
+        <h3>Help Center</h3>
+        <p>Browse our comprehensive documentation and guides.</p>
+        <ul class="help-links">
+          <li><a href="#"><i class="fas fa-book"></i> Getting Started Guide</a></li>
+          <li><a href="#"><i class="fas fa-video"></i> Video Tutorials</a></li>
+          <li><a href="#"><i class="fas fa-file-pdf"></i> Meter Installation Manual</a></li>
+          <li><a href="#"><i class="fas fa-shield-alt"></i> Warranty Policy</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

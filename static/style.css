@@ -1053,3 +1053,21 @@ body {
   .receipt-body { padding: 0.5rem 0.75rem; }
   .receipt-buttons { padding: 0.5rem 0.75rem 1rem; }
 }
+
+.btn-paystack{
+    transition: all .25s ease;
+}
+
+.btn-paystack:active{
+    transform: scale(.97);
+}
+
+.btn-paystack.loading{
+    opacity:.85;
+    cursor:not-allowed;
+    pointer-events:none;
+}
+
+.btn-paystack.loading i{
+    margin-right:8px;
+}

@@ -1,0 +1,86 @@
+{% extends "based.html" %}
+{% block title %}Delivery Address — Ghridciti Energy{% endblock %}
+{% block content %}
+<section class="page active" id="page-address-form">
+  <div class="page-header">
+    <h2 class="page-title">Apply for a prepaid meter</h2>
+    <p class="page-sub">Enter the address where your meter should be delivered.</p>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps-bar">
+    <div class="step done" id="step-1"><span>1</span> Select Meter</div>
+    <div class="step-line"></div>
+    <div class="step active" id="step-2"><span>2</span> Delivery Address</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-3"><span>3</span> Review &amp; Pay</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-4"><span>4</span> Success</div>
+  </div>
+
+  <h3 class="section-label">Delivery Address</h3>
+  <div class="glass-card form-card">
+    <form id="delivery-form" novalidate>
+      <div class="form-row">
+        <div class="form-group floating">
+          <input type="text" id="f-name" placeholder=" " required />
+          <label for="f-name">Full Name</label>
+        </div>
+        <div class="form-group floating">
+          <input type="tel" id="f-phone" placeholder=" " required />
+          <label for="f-phone">Phone Number</label>
+        </div>
+      </div>
+      <div class="form-group floating">
+        <input type="email" id="f-email" placeholder=" " required />
+        <label for="f-email">Email Address</label>
+      </div>
+      <div class="form-group floating">
+        <input type="text" id="f-addr1" placeholder=" " required />
+        <label for="f-addr1">Address Line 1</label>
+      </div>
+      <div class="form-group floating">
+        <input type="text" id="f-addr2" placeholder=" " />
+        <label for="f-addr2">Address Line 2 (Optional)</label>
+      </div>
+      <div class="form-row">
+        <div class="form-group floating">
+          <input type="text" id="f-city" placeholder=" " required />
+          <label for="f-city">City</label>
+        </div>
+        <div class="form-group floating">
+          <input type="text" id="f-state" placeholder=" " required />
+          <label for="f-state">State</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group floating">
+          <input type="text" id="f-zip" placeholder=" " required />
+          <label for="f-zip">ZIP Code</label>
+        </div>
+        <div class="form-group floating">
+          <input type="text" id="f-landmark" placeholder=" " />
+          <label for="f-landmark">Landmark</label>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY INLINE -->
+      <div class="order-summary glass-card" id="order-summary">
+        <h4>Order Summary</h4>
+        <div class="summary-row"><span>Meter Type</span><b id="sum-meter">—</b></div>
+        <div class="summary-row"><span>Quantity</span><b>1</b></div>
+        <div class="summary-row"><span>Delivery Fee</span><b>₦5,000</b></div>
+        <div class="summary-row total-row"><span>Total Amount</span><b id="sum-total">—</b></div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('apply_meter') }}" class="btn-outline" style="text-decoration:none">← Back</a>
+        <button type="submit" class="btn-primary">Proceed to Payment →</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='address-form.js') }}"></script>
+{% endblock %}

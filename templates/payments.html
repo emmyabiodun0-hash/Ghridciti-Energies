@@ -1,0 +1,45 @@
+{% extends "based.html" %}
+{% block title %}Payment History — Ghridciti Energy{% endblock %}
+{% block content %}
+<section class="page active" id="page-payments">
+  <div class="page-header">
+    <h2 class="page-title">Payments</h2>
+    <p class="page-sub">View your completed payments and transactions.</p>
+  </div>
+  <div class="glass-card">
+    {% if orders %}
+    <div class="table-wrap">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Meter Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td style="color:var(--green);font-weight:600">{{ order.reference }}</td>
+            <td>{{ order.meter_type }}</td>
+            <td style="font-weight:700">₦{{ "{:,.0f}".format(order.amount) }}</td>
+            <td><span class="badge badge-{{ order.status | lower }}">{{ order.status }}</span></td>
+            <td style="color:var(--text-muted)">{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="table-empty">
+      <i class="fas fa-credit-card"></i>
+      <p>No payment records yet.</p>
+      <small>Your completed payments will appear here once an order is paid for.</small>
+      <a class="btn-primary mt-sm" href="{{ url_for('apply_meter') }}" style="text-decoration:none">Apply for a prepaid meter</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

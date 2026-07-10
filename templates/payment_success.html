@@ -1,239 +1,57 @@
-{% extends 'base.html' %}
-
-{% block style %}
-
-<style>
-
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#050505;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-    padding:20px;
-}
-
-.success-card{
-    width:100%;
-    max-width:500px;
-    padding:40px;
-    text-align:center;
-
-    background:rgba(15,15,15,.92);
-
-    border:1px solid rgba(0,255,102,.15);
-
-    border-radius:20px;
-
-    backdrop-filter:blur(12px);
-
-    box-shadow:
-        0 0 25px rgba(0,255,102,.08),
-        0 0 60px rgba(0,255,102,.05);
-
-    box-sizing:border-box;
-}
-
-/* Logo */
-
-.logo{
-    display:flex;
-    justify-content:center;
-    margin-bottom:20px;
-}
-
-.logo img{
-    width:110px;
-    max-width:35vw;
-    height:auto;
-}
-
-/* Success Icon */
-
-.success-icon{
-    width:90px;
-    height:90px;
-
-    margin:0 auto 20px;
-
-    border-radius:50%;
-
-    background:#00ff66;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    color:#050505;
-
-    font-size:45px;
-    font-weight:bold;
-
-    box-shadow:0 0 25px rgba(0,255,102,.35);
-}
-
-/* Heading */
-
-h1{
-    color:#00ff66;
-    margin-bottom:15px;
-    font-size:30px;
-}
-
-/* Description */
-
-p{
-    color:#9ca3af;
-    line-height:1.8;
-    font-size:15px;
-}
-
-/* Reference */
-
-.reference{
-    margin:25px 0;
-
-    padding:15px;
-
-    border-radius:12px;
-
-    background:#0f0f0f;
-
-    border:1px solid rgba(0,255,102,.15);
-
-    color:white;
-
-    font-weight:bold;
-
-    word-break:break-all;
-}
-
-/* Buttons */
-
-.buttons{
-    display:flex;
-    gap:15px;
-    margin-top:25px;
-}
-
-.buttons a{
-    flex:1;
-
-    text-decoration:none;
-
-    padding:15px;
-
-    border-radius:12px;
-
-    font-weight:bold;
-
-    transition:.3s;
-}
-
-.primary-btn{
-    background:linear-gradient(135deg,#00ff66,#00cc52);
-    color:#050505;
-}
-
-.primary-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 25px rgba(0,255,102,.25);
-}
-
-.secondary-btn{
-    border:1px solid rgba(0,255,102,.25);
-    color:#00ff66;
-    background:#0f0f0f;
-}
-
-.secondary-btn:hover{
-    background:#161616;
-}
-
-.footer{
-    margin-top:25px;
-    color:#777;
-    font-size:13px;
-}
-
-/* Responsive */
-
-@media(max-width:480px){
-
-    .success-card{
-        padding:25px;
-    }
-
-    .logo img{
-        width:80px;
-    }
-
-    .success-icon{
-        width:75px;
-        height:75px;
-        font-size:38px;
-    }
-
-    h1{
-        font-size:24px;
-    }
-
-    p{
-        font-size:14px;
-    }
-
-    .buttons{
-        flex-direction:column;
-    }
-}
-
-</style>
-
-{% endblock %}
-
+{% extends "based.html" %}
+{% block title %}Payment Successful — Ghridciti Energy{% endblock %}
 {% block content %}
+<section class="page active" id="page-payment-success">
+  <div class="page-header">
+    <h2 class="page-title">Apply for a prepaid meter</h2>
+    <p class="page-sub">Your payment has been confirmed.</p>
+  </div>
 
-<div class="success-card">
+  <!-- STEP INDICATOR -->
+  <div class="steps-bar">
+    <div class="step done" id="step-1"><span>1</span> Select Meter</div>
+    <div class="step-line"></div>
+    <div class="step done" id="step-2"><span>2</span> Delivery Address</div>
+    <div class="step-line"></div>
+    <div class="step done" id="step-3"><span>3</span> Review &amp; Pay</div>
+    <div class="step-line"></div>
+    <div class="step active" id="step-4"><span>4</span> Success</div>
+  </div>
 
-```
-<div class="logo">
-    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Ghridciti Energy">
-</div>
-
-<div class="success-icon">
-    ✓
-</div>
-
-<h1>Application Submitted Successfully</h1>
-
-<p>
-    Your prepaid meter application has been received successfully.
-    Payment has been confirmed and your application is now being processed.
-</p>
-
-<div class="reference">
-    Reference: {{ reference }}
-</div>
-
-<div class="buttons">
-
-    <a href="{{ url_for('home') }}" class="primary-btn">
-        Dashboard
-    </a>
-
-    <a href="{{ url_for('home') }}#my-orders" class="secondary-btn">
-       Track order
-    </a>
-
-</div>
-
-<div class="footer">
-    Ghridciti Energy • Powering Your Future
-</div>
-```
-
-</div>
-
+  {% if order %}
+  <!-- RECEIPT — filled in directly from Flask, no client-side JS needed -->
+  <div class="receipt-box" style="max-width:480px;margin:0 auto;">
+    <div class="receipt-header">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" class="receipt-logo" />
+      <h2>Payment Successful ✓</h2>
+      <p>Thank you for choosing Ghridciti Energy</p>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-item"><span>Receipt ID</span><strong>{{ reference }}</strong></div>
+      <div class="receipt-item"><span>Full Name</span><strong>{{ order.name }}</strong></div>
+      <div class="receipt-item"><span>Email</span><strong>{{ order.email }}</strong></div>
+      <div class="receipt-item"><span>Meter Type</span><strong>{{ order.meter_type }}</strong></div>
+      <div class="receipt-item"><span>Amount Paid</span><strong>₦{{ "{:,.0f}".format(order.amount) }}</strong></div>
+      <div class="receipt-item"><span>Reference</span><strong>{{ order.reference }}</strong></div>
+      <div class="receipt-item"><span>Date</span><strong>{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</strong></div>
+      <div class="receipt-item"><span>Status</span><strong class="receipt-status">{{ order.status }}</strong></div>
+    </div>
+    <div class="receipt-buttons">
+      <button class="receipt-print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Receipt</button>
+      <a class="receipt-close-btn" href="{{ url_for('home') }}" style="text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center">Go to Dashboard</a>
+    </div>
+  </div>
+  {% else %}
+  <!-- Fallback if the reference didn't resolve to an order -->
+  <div class="success-card glass-card">
+    <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+    <h3>Payment Received</h3>
+    <p>We couldn't find the order details for reference <strong>{{ reference }}</strong>, but your payment was recorded.</p>
+    <div class="success-actions">
+      <a class="btn-primary" href="{{ url_for('home') }}" style="text-decoration:none">Return to Dashboard</a>
+      <a class="btn-outline" href="{{ url_for('my_orders') }}" style="text-decoration:none">Track Order</a>
+    </div>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}

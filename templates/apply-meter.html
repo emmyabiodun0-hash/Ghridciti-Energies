@@ -1,0 +1,74 @@
+{% extends "based.html" %}
+{% block title %}Apply for a Prepaid Meter — Ghridciti Energy{% endblock %}
+{% block content %}
+<section class="page active" id="page-buy-meter">
+  <div class="page-header">
+    <h2 class="page-title">Apply for a prepaid meter</h2>
+    <p class="page-sub">Select a meter type and get it delivered to your doorstep.</p>
+  </div>
+
+  <!-- STEP INDICATOR -->
+  <div class="steps-bar">
+    <div class="step active" id="step-1"><span>1</span> Select Meter</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-2"><span>2</span> Delivery Address</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-3"><span>3</span> Review &amp; Pay</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-4"><span>4</span> Success</div>
+  </div>
+
+  <h3 class="section-label">Select Meter Type</h3>
+  <div class="meter-grid">
+    <div class="meter-card glass-card" data-meter="Single Phase Meter" data-price="75000">
+      <div class="meter-img-wrap">
+        <img src="https://i.pinimg.com/1200x/1a/91/b4/1a91b4f1e9a63a2714e4aeae7e841987.jpg" alt="Single Phase Meter" class="meter-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="meter-icon-card" style="display:none"><i class="fas fa-plug"></i></div>
+      </div>
+      <h4>Single Phase Meter</h4>
+      <p class="meter-price">₦75,000</p>
+      <ul class="meter-features">
+        <li><i class="fas fa-check"></i> For homes &amp; small offices</li>
+        <li><i class="fas fa-check"></i> Tamper-proof casing</li>
+        <li><i class="fas fa-check"></i> Remote top-up ready</li>
+        <li><i class="fas fa-check"></i> 1-year warranty</li>
+      </ul>
+      <button class="btn-primary w-full meter-select-btn">Select</button>
+    </div>
+    <div class="meter-card glass-card" data-meter="Three Phase Meter" data-price="150000">
+      <div class="meter-img-wrap">
+        <img src="https://i.pinimg.com/736x/b5/89/25/b58925873cb24e9cfa245f016bc845a3.jpg" alt="Three Phase Meter" class="meter-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="meter-icon-card three" style="display:none"><i class="fas fa-charging-station"></i></div>
+      </div>
+      <div class="meter-badge">Popular</div>
+      <h4>Three Phase Meter</h4>
+      <p class="meter-price">₦150,000</p>
+      <ul class="meter-features">
+        <li><i class="fas fa-check"></i> For industries &amp; factories</li>
+        <li><i class="fas fa-check"></i> High load capacity</li>
+        <li><i class="fas fa-check"></i> Remote top-up ready</li>
+        <li><i class="fas fa-check"></i> 2-year warranty</li>
+      </ul>
+      <button class="btn-primary w-full meter-select-btn">Select</button>
+    </div>
+    <div class="meter-card glass-card" data-meter="Smart Meter" data-price="100000">
+      <div class="meter-img-wrap">
+        <img src="https://i.pinimg.com/736x/05/7a/b0/057ab06f36dd564a89f7f56cc96469c2.jpg" alt="Smart Meter" class="meter-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="meter-icon-card smart" style="display:none"><i class="fas fa-wifi"></i></div>
+      </div>
+      <h4>Smart Meter</h4>
+      <p class="meter-price">₦100,000</p>
+      <ul class="meter-features">
+        <li><i class="fas fa-check"></i> IoT-enabled monitoring</li>
+        <li><i class="fas fa-check"></i> Real-time usage alerts</li>
+        <li><i class="fas fa-check"></i> App-controlled top-up</li>
+        <li><i class="fas fa-check"></i> 3-year warranty</li>
+      </ul>
+      <button class="btn-primary w-full meter-select-btn">Select</button>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='apply-meter.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Ghridciti Energy{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='jj.png') }}" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% if request.endpoint == 'home' %}
+<!-- ═══════════════════ SPLASH SCREEN (dashboard only) ═══════════════════ -->
+<div id="splash-screen">
+  <canvas id="particle-canvas"></canvas>
+  <div class="splash-content">
+    <div class="splash-logo-wrap">
+      <div class="logo-glow-ring"></div>
+      <img id="splash-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy Logo" />
+    </div>
+    <h1 class="splash-title">Ghridciti Energy</h1>
+    <p class="splash-tagline">Powering your world, seamlessly.</p>
+    <div class="splash-loader-wrap">
+      <p class="loading-text"><span class="loading-dot"></span> Loading Ghridciti Energy...</p>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+  </div>
+  <div class="lightning-left"></div>
+  <div class="lightning-right"></div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="app" class="{{ 'hidden' if request.endpoint == 'home' else '' }}">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" class="sidebar-logo-img" />
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('home') }}" class="nav-item {{ 'active' if request.endpoint == 'home' }}">
+        <i class="fas fa-th-large"></i><span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('apply_meter') }}" class="nav-item {{ 'active' if request.endpoint in ['apply_meter','address_form','payment','payment_success'] }}">
+        <i class="fas fa-bolt"></i><span>Apply for a prepaid meter</span>
+      </a>
+      <a href="{{ url_for('my_orders') }}" class="nav-item {{ 'active' if request.endpoint == 'my_orders' }}">
+        <i class="fas fa-list-alt"></i><span>My Orders</span>
+      </a>
+      <a href="{{ url_for('payment_history') }}" class="nav-item {{ 'active' if request.endpoint == 'payment_history' }}">
+        <i class="fas fa-credit-card"></i><span>Payments</span>
+      </a>
+      <a href="{{ url_for('address_book') }}" class="nav-item {{ 'active' if request.endpoint == 'address_book' }}">
+        <i class="fas fa-map-marker-alt"></i><span>Address Book</span>
+      </a>
+      <a href="{{ url_for('notifications') }}" class="nav-item {{ 'active' if request.endpoint == 'notifications' }}">
+        <i class="fas fa-bell"></i><span>Notifications</span>
+      </a>
+      <a href="{{ url_for('support') }}" class="nav-item {{ 'active' if request.endpoint == 'support' }}">
+        <i class="fas fa-headset"></i><span>Support Center</span>
+      </a>
+      <a href="{{ url_for('profile') }}" class="nav-item {{ 'active' if request.endpoint == 'profile' }}">
+        <i class="fas fa-user"></i><span>Profile</span>
+      </a>
+      <a href="{{ url_for('settings') }}" class="nav-item {{ 'active' if request.endpoint == 'settings' }}">
+        <i class="fas fa-cog"></i><span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-promo">
+      <p>Get your prepaid meter delivered fast &amp; securely.</p>
+      <a href="{{ url_for('apply_meter') }}" class="btn-promo" style="text-decoration:none;display:block;text-align:center">Apply for a prepaid meter Now</a>
+    </div>
+
+    <a href="{{ url_for('logout') }}" class="nav-item logout-item" id="logout-btn">
+      <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+    </a>
+
+    <div class="sidebar-footer-logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Ghridciti Energy" />
+      <span class="sidebar-tagline">Powering your world, seamlessly.</span>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrap">
+
+    <!-- TOP NAVBAR -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+      <div class="topbar-brand">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="logo" class="topbar-logo" />
+        <span class="topbar-name">Ghridciti Energy</span>
+      </div>
+      <div class="topbar-right">
+        <a class="notif-btn" href="{{ url_for('notifications') }}">
+          <i class="fas fa-bell"></i>
+          <span class="notif-badge" id="notif-badge">0</span>
+        </a>
+        <div class="user-info">
+          <div class="user-avatar">E</div>
+          <div class="user-meta">
+            <span class="user-name">{{ current_user.username }}</span>
+            <span class="user-role">Customer</span>
+          </div>
+        </div>
+        <div class="wallet-chip">
+          <i class="fas fa-wallet"></i>
+          <span>₦0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SIDEBAR OVERLAY for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- PAGE CONTENT (each page template fills this in) -->
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+      <span>© 2024 Ghridciti Energy. All rights reserved.</span>
+      <div class="footer-socials">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- Paystack SDK -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+  // Real Flask URLs handed off to the static JS files below, since
+  // static .js files aren't run through Jinja and can't call url_for()
+  // directly. This keeps every redirect using a real Flask route.
+  window.ROUTES = {
+    dashboard:       "{{ url_for('home') }}",
+    applyMeter:      "{{ url_for('apply_meter') }}",
+    addressForm:     "{{ url_for('address_form') }}",
+    payment:         "{{ url_for('payment') }}",
+    myOrders:        "{{ url_for('my_orders') }}",
+    paymentHistory:  "{{ url_for('payment_history') }}",
+    addressBook:     "{{ url_for('address_book') }}",
+    notifications:   "{{ url_for('notifications') }}",
+    support:         "{{ url_for('support') }}",
+    profile:         "{{ url_for('profile') }}",
+    settings:        "{{ url_for('settings') }}",
+    logout:          "{{ url_for('logout') }}"
+  };
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a3ab1fb18ccac1d4b829430/1jrqkegbd';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>

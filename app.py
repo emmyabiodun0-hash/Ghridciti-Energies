@@ -722,6 +722,94 @@ def new_reset_password():
 
 
 
+@app.route('/apply-meter')
+@login_required
+def apply_meter():
+    # Step 1 of the checkout flow: meter selection.
+    return render_template('apply-meter.html')
+
+
+@app.route('/apply-meter/address')
+@login_required
+def address_form():
+    # Step 2: delivery address form. This is intentionally a
+    # different endpoint from address_book() below — one is the
+    # checkout step, the other is the standalone Address Book page.
+    return render_template('address-form.html')
+
+
+@app.route('/apply-meter/payment')
+@login_required
+def payment():
+    # Step 3: review & pay. The actual order-saving + Paystack
+    # initialization still happens in your existing save_order()
+    # route via fetch('/save-order') from payment.js — unchanged.
+    return render_template('payment.html')
+
+
+@app.route('/my-orders')
+@login_required
+def my_orders():
+    orders = MeterRequest.query.filter_by(
+        user_id=current_user.id
+    ).order_by(MeterRequest.id.desc()).all()
+
+    return render_template('my-orders.html', orders=orders)
+
+
+@app.route('/payments')
+@login_required
+def payment_history():
+    # "Payment History" per the flow spec: completed (Paid) orders
+    # only, reusing MeterRequest so no new model/relationship is
+    # required. Swap this query for a join against Payment if you'd
+    # rather list from that table directly.
+    orders = MeterRequest.query.filter_by(
+        user_id=current_user.id,
+        status="Paid"
+    ).order_by(MeterRequest.id.desc()).all()
+
+    return render_template('payments.html', orders=orders)
+
+
+@app.route('/address-book')
+@login_required
+def address_book():
+    return render_template('address-book.html')
+
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    return render_template('notifications.html')
+
+
+@app.route('/support')
+@login_required
+def support():
+    return render_template('support.html')
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
+
+
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html')
+
+
+
+
+
+
+
+
+
+
 
 
 
