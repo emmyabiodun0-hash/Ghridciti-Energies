@@ -365,7 +365,8 @@ def paystack_webhook():
     ).first()
 
     if payment:
-        return "", 200
+    print("Payment already exists.")
+    return "", 200
 
     # Update order
     order.status = "Paid"
